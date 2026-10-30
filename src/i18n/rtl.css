@@ -1,0 +1,138 @@
+/* ============================================================
+   RX-AID RTL (Right-to-Left) Stylesheet
+   For Arabic, Urdu, Persian, and Hebrew
+   ============================================================ */
+
+html[dir="rtl"],
+.is-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* ─── Typography & Alignment ─── */
+[dir="rtl"] p,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] label,
+[dir="rtl"] .card-sub,
+[dir="rtl"] .form-sub {
+  text-align: right;
+}
+
+/* ─── Navigation ─── */
+[dir="rtl"] .navbar-brand {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .navbar-links {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .navbar-controls {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .mobile-bottom-bar {
+  flex-direction: row-reverse;
+}
+
+/* ─── Forms & Inputs ─── */
+[dir="rtl"] .input,
+[dir="rtl"] textarea {
+  text-align: right;
+  direction: rtl;
+}
+
+[dir="rtl"] .field-input-icon-wrap .field-icon {
+  left: auto;
+  right: 14px;
+}
+
+[dir="rtl"] .input.has-icon {
+  padding-left: 16px;
+  padding-right: 44px;
+}
+
+[dir="rtl"] .password-input-wrap .toggle-password-btn {
+  right: auto;
+  left: 12px;
+}
+
+[dir="rtl"] .password-input-wrap .input {
+  padding-right: 16px;
+  padding-left: 48px;
+}
+
+[dir="rtl"] .checkbox-label {
+  flex-direction: row;
+}
+
+/* ─── Icons & Indicators ─── */
+[dir="rtl"] .btn {
+  flex-direction: row;
+}
+
+[dir="rtl"] .service-arrow,
+[dir="rtl"] .rx-chevron {
+  transform: rotate(180deg);
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .dose-left,
+[dir="rtl"] .hero-actions,
+[dir="rtl"] .item-actions {
+  flex-direction: row;
+}
+
+[dir="rtl"] .service-card {
+  flex-direction: row;
+  text-align: right;
+}
+
+[dir="rtl"] .patient-card {
+  flex-direction: row;
+  text-align: right;
+}
+
+[dir="rtl"] .pharmacy-banner-left {
+  flex-direction: row;
+  text-align: right;
+}
+
+/* ─── Tables ─── */
+[dir="rtl"] .compare-table th,
+[dir="rtl"] .compare-table td {
+  text-align: right;
+}
+
+[dir="rtl"] .compare-table th:first-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: var(--radius-sm);
+}
+
+[dir="rtl"] .compare-table th:last-child {
+  border-top-right-radius: 0;
+  border-top-left-radius: var(--radius-sm);
+}
+
+/* ─── Search Bar ─── */
+[dir="rtl"] .search-bar-wrap .search-icon {
+  left: auto;
+  right: 16px;
+}
+
+[dir="rtl"] .search-input {
+  padding-left: 16px;
+  padding-right: 48px;
+  text-align: right;
+}
+
+/* ─── Badges & Status ─── */
+[dir="rtl"] .badge {
+  flex-direction: row;
+}

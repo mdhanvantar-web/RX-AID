@@ -24,7 +24,7 @@ const DEFAULT_USER: UserProfile = {
   id: 'user-caregiver-01',
   name: 'Monish (Family Caregiver)',
   email: 'monish.care@example.com',
-  phone: '+91 94401 56789',
+  phone: '+91 90000 00000',
   deliveryAddress: 'Flat 302, Shanti Nilayam, Green Hills Road',
   city: 'Hyderabad',
   pincode: '500033',

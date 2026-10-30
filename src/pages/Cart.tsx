@@ -34,7 +34,7 @@ export function Cart() {
 
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const [address, setAddress] = useState(user.deliveryAddress || 'Flat 302, Shanti Nilayam, Green Hills Road, Hyderabad');
-  const [phone, setPhone] = useState(user.phone || '+91 94401 56789');
+  const [phone, setPhone] = useState(user.phone || '+91 90000 00000');
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [orderCelebration, setOrderCelebration] = useState(false);
 
