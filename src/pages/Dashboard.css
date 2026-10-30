@@ -1,0 +1,213 @@
+/* Dashboard Page */
+.dashboard-page {}
+
+/* Hero */
+.dashboard-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+.hero-content { flex: 1; }
+.hero-date { color: var(--text-muted); font-size: 0.875rem; margin-top: var(--space-1); }
+.text-gradient {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Patient Card */
+.patient-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+.patient-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+  background: var(--grad-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+}
+.patient-info { flex: 1; }
+.patient-name { font-size: 1.25rem; margin-bottom: var(--space-2); }
+.patient-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.patient-meta .dot { color: var(--text-muted); }
+
+/* Adherence ring */
+.adherence-ring {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+.ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-pct { font-size: 1rem; font-weight: 800; color: var(--color-primary-light); line-height: 1; }
+.ring-sub { font-size: 0.55rem; color: var(--text-muted); margin-top: 2px; }
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.stat-card {
+  text-align: center;
+  padding: var(--space-5);
+}
+.stat-icon { margin-bottom: var(--space-2); }
+.stat-value { font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); line-height: 1.2; }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+/* Main grid */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* Card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; gap: var(--space-5); }
+.timeline-group {}
+.timing-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.timing-emoji { font-size: 1rem; }
+.timing-label { font-weight: 600; font-size: 0.875rem; color: var(--text-primary); }
+.timing-time { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+.dose-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.dose-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+}
+.dose-item--taken { border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05); }
+.dose-item--missed { border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
+.dose-item--skipped { opacity: 0.6; }
+.dose-icon { color: var(--text-muted); flex-shrink: 0; }
+.dose-info { flex: 1; display: flex; flex-direction: column; }
+.dose-name { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+.dose-status-label { font-size: 0.75rem; margin-top: 2px; color: var(--text-muted); }
+.dose-status--taken { color: var(--color-success); }
+.dose-status--missed { color: var(--color-danger); }
+.dose-status--pending { color: var(--color-warning); }
+.dose-actions { display: flex; gap: var(--space-2); }
+
+/* Prescription list */
+.prescription-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.rx-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.rx-item:hover { border-color: var(--border-default); background: var(--bg-elevated); }
+.rx-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.rx-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+.rx-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.rx-name { font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); }
+.rx-date { font-size: 0.75rem; color: var(--text-muted); }
+.rx-chevron { color: var(--text-muted); flex-shrink: 0; }
+
+/* Empty states */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
+  gap: var(--space-3);
+}
+.empty-icon { font-size: 2.5rem; }
+.empty-title { font-size: 0.9375rem; font-weight: 600; color: var(--text-primary); }
+.empty-sub { font-size: 0.8125rem; color: var(--text-muted); }
+
+/* Link button */
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary-light);
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+.link-btn:hover { color: var(--color-primary); }
+
+@media (max-width: 1024px) {
+  .dashboard-main-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-hero { flex-direction: column; align-items: flex-start; }
+}

@@ -1,4 +1,3 @@
-
 # RX-AID
 
 > **Intelligent Prescription Assistance for Every Caregiver.**
@@ -29,7 +28,7 @@ In many healthcare journeys—particularly across Tier-2 and Tier-3 cities—car
 > 2. **Human Verification Required:** RX-AID **never** activates an automated schedule without explicit review and verification by a caregiver or medical professional.
 > 3. **Zero Inference Policy:** The AI engine is strictly instructed to flag unreadable text, ambiguous shorthand, or missing dosages as **UNCONNECTED / UNKNOWN** rather than guessing or hallucinating instructions.
 > 4. **No Modification:** RX-AID does not modify prescribed dosages, suggest alternative drugs, or offer clinical recommendations.
-> 5. **Synthetic Testing:** All demonstrations, test suites, and screenshots must utilize synthetic or fictional prescription data to safeguard patient privacy.
+> 5. **Synthetic Testing:** All demonstrations, test suites, and screenshots utilize synthetic or fictional prescription data to safeguard patient privacy.
 
 ---
 
@@ -44,6 +43,74 @@ In many healthcare journeys—particularly across Tier-2 and Tier-3 cities—car
 
 ---
 
-## 💡 Our Solution
+## 💡 Architecture & Key Features
 
-RX-AID transforms static paper prescriptions into interactive, accessible, and automated daily care routines while prioritizing patient safety above all else.
+### Complete 5-Section Workflow:
+1. **Caregiver Dashboard (`/`)**:
+   - Patient overview profile (Ramaiah Naidu, 68/M, Father, Chronic conditions: Type 2 Diabetes, Hypertension).
+   - Real-time 7-day adherence gauge and statistics (Taken, Missed, Adherence %).
+   - Today's medication timeline with direct dose checkoff buttons.
+   - Prescription history and instant navigation to upload.
+
+2. **Prescription Scanner (`/scan`)**:
+   - Drag-and-drop file upload, file explorer selection, and mobile camera capture.
+   - Validation for file formats (JPEG, PNG, WebP) and size limits (10MB).
+   - Built-in **Synthetic Prescription Generator** for instant 1-click demonstration without privacy risks.
+   - Real-time multimodal Gemini API analysis with animated processing states.
+
+3. **Multimodal AI Extraction**:
+   - Powered by official `@google/genai` SDK (`gemini-2.0-flash`).
+   - Strict medical safety prompt extracting medicine name, strength, dose, frequency, timings, food instructions, and duration.
+   - Zero hallucination policy: unreadable text or shorthand is flagged as `unclearFields` instead of guessed.
+   - Synthetic demo fallback mode when API key is unconfigured.
+
+4. **Human Verification Screen (`/verify/:id`)**:
+   - Side-by-side view comparing original prescription image against extracted structured fields.
+   - Prominent alerts for ambiguous handwriting or unverified entries.
+   - Inline editing for correcting transcription errors.
+   - **Safety Lock:** Activation is strictly blocked until all unclear fields are confirmed or resolved.
+
+5. **Medication Routine (`/routine`)**:
+   - Full daily routine organized into Morning, Afternoon, Evening, and Night routines.
+   - 7-day automated schedule generation from verified prescriptions.
+   - Mark doses as Taken, Missed, or Pending with automatic adherence computation.
+   - LocalStorage persistence preserving all edits and schedule records across reloads.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Frontend:** React 19, TypeScript, Vite
+- **Icons & UI:** Lucide React, Custom Dark Medical Design System
+- **State & Storage:** React Context + useReducer with LocalStorage persistence
+- **Routing:** React Router v7
+- **Date Calculations:** date-fns
+- **AI Multimodal Understanding:** Google Gemini (`@google/genai` SDK)
+
+---
+
+## 🚀 Local Launch & Development
+
+### 1. Install Dependencies
+```bash
+npm install
+```
+
+### 2. Configure Gemini API Key (Optional for Live AI)
+Create a `.env` file in the root directory:
+```env
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+```
+*(If no API key is provided, RX-AID automatically operates in synthetic demonstration mode with full functionality)*
+
+### 3. Start Development Server
+```bash
+npm run dev
+```
+Open **[http://localhost:5180](http://localhost:5180)** in your browser.
+
+### 4. Build for Production
+```bash
+npm run build
+```
+Build output is saved to `/dist`.
