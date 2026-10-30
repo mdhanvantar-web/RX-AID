@@ -8,35 +8,28 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle,
   Pill,
-  Plus,
   Shield,
   Activity,
   Award,
+  ShoppingCart,
+  Scale,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
-  getTimingLabel,
   getTimingTime,
   getAdherenceRate,
 } from '../utils/scheduleUtils';
+import { getTimingLabelFriendly } from '../utils/translations';
 import type { MedicationTiming, DoseRecord, DoseStatus } from '../types';
 import './Routine.css';
 
 const TIMING_ORDER: MedicationTiming[] = ['morning', 'afternoon', 'evening', 'night'];
 
-const TIMING_ICONS: Record<MedicationTiming, string> = {
-  morning: '🌅',
-  afternoon: '☀️',
-  evening: '🌆',
-  night: '🌙',
-};
-
 export function Routine() {
   const navigate = useNavigate();
   const { state, markDose } = useApp();
-  const { doses, prescriptions } = state;
+  const { doses, prescriptions, language } = state;
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const formattedDate = format(currentDate, 'yyyy-MM-dd');
@@ -81,22 +74,29 @@ export function Routine() {
         {/* Header */}
         <div className="routine-header animate-fade-in">
           <div>
-            <p className="section-label">Medication Routine & Adherence</p>
-            <h1>Daily Care Timeline</h1>
+            <p className="section-label">Caregiver Medication Log</p>
+            <h1>My Prescribed Medicines 💊</h1>
             <p className="routine-subtitle">
-              Verified daily schedules organized into morning, afternoon, evening, and bedtime routines.
+              Verified daily routines organized into morning, afternoon, evening, and bedtime doses.
             </p>
           </div>
 
           <div className="routine-header-actions">
             <button
-              id="routine-scan-btn"
+              id="order-from-routine-btn"
               className="btn btn-primary"
-              onClick={() => navigate('/scan')}
-              aria-label="Scan new prescription"
+              onClick={() => navigate('/pharmacies')}
             >
-              <Plus size={16} aria-hidden="true" />
-              Scan New Rx
+              <ShoppingCart size={18} aria-hidden="true" />
+              <span>Order from Pharmacies</span>
+            </button>
+            <button
+              id="compare-from-routine-btn"
+              className="btn btn-secondary"
+              onClick={() => navigate('/compare')}
+            >
+              <Scale size={18} aria-hidden="true" />
+              <span>Compare Prices</span>
             </button>
           </div>
         </div>
@@ -110,10 +110,10 @@ export function Routine() {
               onClick={handlePrevDay}
               aria-label="Previous day"
             >
-              <ChevronLeft size={18} aria-hidden="true" />
+              <ChevronLeft size={20} aria-hidden="true" />
             </button>
             <div className="date-display">
-              <Calendar size={18} className="calendar-icon" aria-hidden="true" />
+              <Calendar size={20} className="calendar-icon" aria-hidden="true" />
               <span className="current-date-text">{displayDateStr}</span>
               {isToday && <span className="badge badge-primary">Today</span>}
             </div>
@@ -123,7 +123,7 @@ export function Routine() {
               onClick={handleNextDay}
               aria-label="Next day"
             >
-              <ChevronRight size={18} aria-hidden="true" />
+              <ChevronRight size={20} aria-hidden="true" />
             </button>
           </div>
 
@@ -142,21 +142,21 @@ export function Routine() {
         {/* Quick Summary Row */}
         <section className="stats-grid stagger" aria-label="Daily adherence statistics">
           <div className="stat-card card">
-            <div className="stat-icon" style={{ color: 'var(--color-primary)' }} aria-hidden="true">
+            <div className="stat-icon-wrap stat-icon--neutral" aria-hidden="true">
               <Clock size={20} />
             </div>
             <div className="stat-value">{totalCount}</div>
             <div className="stat-label">Scheduled Doses</div>
           </div>
           <div className="stat-card card">
-            <div className="stat-icon" style={{ color: 'var(--color-success)' }} aria-hidden="true">
+            <div className="stat-icon-wrap stat-icon--success" aria-hidden="true">
               <CheckCircle size={20} />
             </div>
             <div className="stat-value" style={{ color: 'var(--color-success)' }}>{takenCount}</div>
             <div className="stat-label">Taken Today</div>
           </div>
           <div className="stat-card card">
-            <div className="stat-icon" style={{ color: 'var(--color-danger)' }} aria-hidden="true">
+            <div className="stat-icon-wrap stat-icon--danger" aria-hidden="true">
               <XCircle size={20} />
             </div>
             <div className="stat-value" style={{ color: missedCount > 0 ? 'var(--color-danger)' : 'inherit' }}>
@@ -165,10 +165,10 @@ export function Routine() {
             <div className="stat-label">Missed Doses</div>
           </div>
           <div className="stat-card card">
-            <div className="stat-icon" style={{ color: 'var(--color-accent)' }} aria-hidden="true">
+            <div className="stat-icon-wrap stat-icon--primary" aria-hidden="true">
               <Award size={20} />
             </div>
-            <div className="stat-value" style={{ color: 'var(--color-primary-light)' }}>
+            <div className="stat-value" style={{ color: 'var(--color-primary-dark)' }}>
               {overallAdherence}%
             </div>
             <div className="stat-label">Overall Adherence</div>
@@ -181,11 +181,11 @@ export function Routine() {
           <section className="routine-timeline-section card" aria-labelledby="routine-timeline-heading">
             <div className="card-header">
               <h2 id="routine-timeline-heading" className="card-title">
-                <Activity size={18} aria-hidden="true" />
+                <Activity size={20} aria-hidden="true" />
                 Schedule for {isToday ? 'Today' : format(currentDate, 'MMM d')}
               </h2>
               {totalCount > 0 && (
-                <span className="badge badge-muted">
+                <span className="badge badge-primary">
                   {dayAdherencePct}% Completed
                 </span>
               )}
@@ -196,15 +196,15 @@ export function Routine() {
                 <div className="empty-icon" aria-hidden="true">📅</div>
                 <p className="empty-title">No doses scheduled for this date</p>
                 <p className="empty-sub">
-                  Scan and verify a prescription to automatically generate 7-day medication routines.
+                  Scan and verify a prescription to automatically generate safe 7-day medication routines.
                 </p>
                 <button
                   id="empty-routine-scan"
                   className="btn btn-primary"
                   onClick={() => navigate('/scan')}
                 >
-                  <Plus size={16} aria-hidden="true" />
-                  Scan Prescription
+                  <Pill size={16} aria-hidden="true" />
+                  Scan Prescription Now
                 </button>
               </div>
             ) : (
@@ -216,9 +216,10 @@ export function Routine() {
                   return (
                     <div key={timing} className="time-block" role="listitem">
                       <div className="time-block-header">
-                        <span className="timing-emoji" aria-hidden="true">{TIMING_ICONS[timing]}</span>
                         <div className="time-block-info">
-                          <span className="timing-title">{getTimingLabel(timing)} Routine</span>
+                          <span className="timing-title">
+                            {getTimingLabelFriendly(timing, language)}
+                          </span>
                           <span className="timing-window">Target Window: {getTimingTime(timing)}</span>
                         </div>
                       </div>
@@ -244,21 +245,20 @@ export function Routine() {
             <div className="card">
               <div className="card-header">
                 <h2 id="active-meds-heading" className="card-title">
-                  <Shield size={18} aria-hidden="true" />
+                  <Shield size={20} aria-hidden="true" />
                   Verified Prescriptions
                 </h2>
-                <span className="badge badge-primary">{verifiedMedications.length} active</span>
+                <span className="badge badge-success">{verifiedMedications.length} active</span>
               </div>
 
               {verifiedMedications.length === 0 ? (
                 <div className="empty-sidebar">
-                  <AlertCircle size={28} className="empty-sidebar-icon" aria-hidden="true" />
-                  <p className="empty-sub">No verified medications found.</p>
+                  <p className="empty-sub">No verified prescriptions yet.</p>
                   <button
                     className="btn btn-secondary btn-sm"
                     onClick={() => navigate('/scan')}
                   >
-                    Upload Prescription
+                    Scan Prescription
                   </button>
                 </div>
               ) : (
@@ -266,7 +266,7 @@ export function Routine() {
                   {verifiedMedications.map(med => (
                     <div key={med.id} className="verified-med-item" role="listitem">
                       <div className="verified-med-title-row">
-                        <Pill size={14} className="med-icon" aria-hidden="true" />
+                        <Pill size={16} className="med-icon" aria-hidden="true" />
                         <span className="verified-med-name">{med.medicineName}</span>
                         {med.strength && <span className="badge badge-muted">{med.strength}</span>}
                       </div>
@@ -291,8 +291,8 @@ export function Routine() {
 
             {/* Medical Disclaimer Reminder */}
             <div className="safety-notice" style={{ marginTop: 'var(--space-4)' }} role="note">
-              <Shield size={16} className="icon" aria-hidden="true" />
-              <p style={{ fontSize: '0.8rem' }}>
+              <Shield size={18} className="icon" aria-hidden="true" />
+              <p style={{ fontSize: '0.85rem' }}>
                 RX-AID maintains your verified schedule. If symptoms change or adverse reactions occur, contact your healthcare provider immediately.
               </p>
             </div>
@@ -333,7 +333,7 @@ function RoutineDoseCard({
               onClick={() => onMark('taken')}
               aria-label={`Mark ${dose.medicineName} as taken`}
             >
-              <CheckCircle size={14} aria-hidden="true" />
+              <CheckCircle size={16} aria-hidden="true" />
               Taken
             </button>
           )}
@@ -345,7 +345,7 @@ function RoutineDoseCard({
               onClick={() => onMark('missed')}
               aria-label={`Mark ${dose.medicineName} as missed`}
             >
-              <XCircle size={14} aria-hidden="true" />
+              <XCircle size={16} aria-hidden="true" />
               Missed
             </button>
           )}

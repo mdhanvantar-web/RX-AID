@@ -1,0 +1,217 @@
+/* Orders Page Styles */
+.orders-page {}
+
+.orders-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.orders-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-top: var(--space-1);
+}
+
+.empty-orders-card {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  max-width: 640px;
+  margin: var(--space-6) auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  border: 1.5px solid var(--border-subtle);
+}
+
+.empty-orders-icon {
+  font-size: 3.5rem;
+}
+
+.empty-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.order-record-card {
+  border: 1.5px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.order-top-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.order-id-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.order-id-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.order-date-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.order-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1px solid #bbf7d0;
+}
+
+.order-pharmacy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.pharmacy-badge-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pharmacy-icon {
+  color: var(--color-primary);
+}
+
+.pharmacy-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.delivery-est-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.order-items-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.box-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.ordered-items-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ordered-item-pill {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.88rem;
+}
+
+.pill-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pill-qty {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.pill-price {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.order-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.delivery-destination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.pin-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.order-total-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.total-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.total-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--color-primary-dark);
+}

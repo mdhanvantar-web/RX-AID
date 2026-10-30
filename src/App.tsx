@@ -5,6 +5,12 @@ import { Dashboard } from './pages/Dashboard';
 import { Scanner } from './pages/Scanner';
 import { Verification } from './pages/Verification';
 import { Routine } from './pages/Routine';
+import { Pharmacies } from './pages/Pharmacies';
+import { PriceComparison } from './pages/PriceComparison';
+import { Cart } from './pages/Cart';
+import { Orders } from './pages/Orders';
+import { Profile } from './pages/Profile';
+import { Login } from './pages/Login';
 
 export default function App() {
   return (
@@ -17,6 +23,12 @@ export default function App() {
             <Route path="/scan" element={<Scanner />} />
             <Route path="/verify/:id" element={<Verification />} />
             <Route path="/routine" element={<Routine />} />
+            <Route path="/pharmacies" element={<Pharmacies />} />
+            <Route path="/compare" element={<PriceComparison />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/login" element={<Login />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

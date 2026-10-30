@@ -1,0 +1,239 @@
+/* Pharmacies Page Styles */
+.pharmacies-page {}
+
+.pharmacies-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.pharmacies-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-top: var(--space-1);
+}
+
+.search-bar-wrap {
+  position: relative;
+  margin: var(--space-5) 0;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: var(--text-muted);
+}
+
+.search-input {
+  padding-left: 48px;
+  min-height: 52px;
+  font-size: 1.02rem;
+}
+
+/* Stores Grid */
+.stores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+}
+
+.store-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border: 1.5px solid var(--border-subtle);
+  transition: all var(--transition-base);
+}
+
+.store-card--selected {
+  border-color: var(--color-primary);
+  background: linear-gradient(145deg, #ffffff 0%, #f0fdfa 100%);
+  box-shadow: 0 4px 16px rgba(13, 148, 136, 0.12);
+}
+
+.store-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.store-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.store-name {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.store-tagline {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.store-meta-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.star-icon {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+.store-location-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.pin-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-primary);
+}
+
+.store-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.store-action-row {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.select-store-btn {
+  width: 100%;
+}
+
+.selected-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--color-primary-dark);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 10px;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-sm);
+  border: 1px solid #99f6e4;
+}
+
+/* Store Inventory */
+.store-inventory-section {
+  border: 1.5px solid var(--border-subtle);
+}
+
+.inventory-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.highlight-store {
+  color: var(--color-primary);
+}
+
+.inventory-sub {
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.product-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.product-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-base);
+}
+
+.product-card:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.product-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stock-tag {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.product-title {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.product-details-list {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.product-price {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--color-primary-dark);
+}
+
+.per-pack-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
