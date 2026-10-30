@@ -3,7 +3,7 @@
 
 > **Intelligent Prescription Assistance for Every Caregiver.**
 
-[![GDG 2026](https://img.shields.io/badge/GDG%202026-Prompt%20to%20Product-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/)
+
 [![Project Lead](https://img.shields.io/badge/Project%20Lead-Monish%20Sambangi-0F9D58?style=for-the-badge)](https://github.com/mdhanvantar-web)
 [![AI Engine](https://img.shields.io/badge/AI%20Engine-Google%20Gemini-EA4335?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
