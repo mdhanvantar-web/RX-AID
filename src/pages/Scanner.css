@@ -419,3 +419,35 @@
     flex-direction: column;
   }
 }
+
+/* Comparison mode banner */
+.compare-mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+  background: var(--color-primary-soft);
+  border: 1.5px solid #99f6e4;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+
+.compare-mode-text {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 260px;
+  color: var(--color-primary-dark);
+}
+
+.compare-mode-text svg { flex-shrink: 0; margin-top: 2px; }
+
+.compare-mode-text p { color: var(--color-primary-dark); font-size: 0.94rem; }
+
+@media (max-width: 640px) {
+  .compare-mode-banner .btn { width: 100%; }
+}
+

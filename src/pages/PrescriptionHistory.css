@@ -1,0 +1,353 @@
+/* Prescription History — RX-AID light, elderly-friendly theme */
+
+.rx-history-page .history-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.history-subtitle {
+  max-width: 62ch;
+  margin-top: var(--space-2);
+}
+
+.compare-picker {
+  margin-top: var(--space-6);
+  border-left: 5px solid var(--color-primary);
+}
+
+.compare-picker-head {
+  margin-bottom: var(--space-5);
+}
+
+.compare-picker-sub {
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+  font-size: 0.95rem;
+}
+
+.compare-picker-controls {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: var(--space-4);
+  align-items: end;
+}
+
+.picker-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.picker-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.picker-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  padding-bottom: 12px;
+}
+
+.compare-saved-btn {
+  min-width: 150px;
+}
+
+.picker-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.history-section {
+  margin-top: var(--space-8);
+}
+
+.history-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.history-card {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.history-thumb-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: stretch;
+}
+
+.history-thumb-btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  cursor: pointer;
+  padding: 0;
+  min-height: 130px;
+}
+
+.history-thumb-btn:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.history-thumb-img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+
+.history-thumb-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 5px 8px;
+  background: rgba(15, 23, 42, 0.74);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.history-thumb-placeholder {
+  min-height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border: 1.5px dashed var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.version-chip {
+  align-self: flex-start;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  border: 1px solid #ccfbf1;
+  border-radius: var(--radius-full);
+  padding: 3px 12px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.history-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.history-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.history-card-title {
+  font-size: 1.2rem;
+}
+
+.history-card-file {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
+.history-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.history-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.history-meta--error {
+  color: var(--color-danger);
+}
+
+.history-med-preview {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+}
+
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.history-comparisons {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.history-comparisons-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.history-comparison-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  text-align: left;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.history-comparison-link:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.history-comparison-link span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-help {
+  margin-top: var(--space-6);
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  background: var(--bg-warm-tint);
+  border-color: #fcd34d;
+}
+
+.history-help p {
+  font-size: 0.92rem;
+}
+
+/* Shared image modal (history + comparison) */
+.image-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.68);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 1200;
+}
+
+.image-modal-card {
+  width: min(100%, 820px);
+  max-height: 92vh;
+  overflow: auto;
+  padding: var(--space-5);
+}
+
+.image-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.image-modal-head h2 {
+  font-size: 1.2rem;
+}
+
+.image-modal-img {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+}
+
+.image-modal-caption {
+  margin-top: var(--space-3);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 820px) {
+  .compare-picker-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .picker-arrow {
+    display: none;
+  }
+
+  .compare-saved-btn {
+    width: 100%;
+  }
+
+  .history-card {
+    grid-template-columns: 1fr;
+  }
+
+  .history-thumb-btn,
+  .history-thumb-img {
+    max-height: 180px;
+  }
+
+  .history-thumb-img {
+    height: 180px;
+  }
+
+  .history-actions .btn {
+    flex: 1;
+  }
+}

@@ -22,13 +22,15 @@ const TIMING_OPTIONS: MedicationTiming[] = ['morning', 'afternoon', 'evening', '
 export function Verification() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { state, upsertPrescription, addDoses } = useApp();
+  const { state, upsertPrescription, addDoses, setActivePrescription, markComparisonReviewed } = useApp();
 
   const prescription = state.prescriptions.find(p => p.id === id);
+  const comparison = state.comparisons.find(c => c.newPrescriptionId === id);
 
   const [draft, setDraft] = useState<ExtractedPrescription | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [hasUnresolved, setHasUnresolved] = useState(false);
+  const [comparisonAcknowledged, setComparisonAcknowledged] = useState(false);
 
   useEffect(() => {
     if (prescription?.extracted) {
@@ -98,6 +100,7 @@ export function Verification() {
   async function handleVerify() {
     if (!draft || !prescription) return;
     if (hasUnresolved) return;
+    if (comparison && !comparisonAcknowledged) return;
 
     // Save verified data and activate prescription
     const updatedRx = {
@@ -106,6 +109,10 @@ export function Verification() {
       verified: draft,
     };
     upsertPrescription(updatedRx);
+    setActivePrescription(prescription.id);
+    if (comparison) {
+      markComparisonReviewed(comparison.id);
+    }
 
     // Generate dose schedule for next 7 days for all clear medications
     const clearMeds = draft.medications.filter(m => !m.unclear);
@@ -123,6 +130,9 @@ export function Verification() {
     low: 'badge-danger',
     unclear: 'badge-unclear',
   };
+
+  const needsComparisonAck = Boolean(comparison) && !comparisonAcknowledged;
+  const verifyBlocked = hasUnresolved || needsComparisonAck;
 
   return (
     <main className="page-content verify-page">
@@ -163,6 +173,54 @@ export function Verification() {
               )}
             </span>
           </div>
+        )}
+
+        {comparison && (
+          <section className="verify-comparison-banner card animate-fade-in" aria-labelledby="verify-compare-title">
+            <div className="verify-comparison-head">
+              <div>
+                <h2 id="verify-compare-title" className="card-title">
+                  <AlertTriangle size={18} aria-hidden="true" />
+                  This prescription differs from an earlier version
+                </h2>
+                <p className="verify-comparison-sub">
+                  Comparison result: {comparison.result.summary.changed} changed,{' '}
+                  {comparison.result.summary.added} added, {comparison.result.summary.removed} no
+                  longer listed, {comparison.result.summary.needsReview} needing review.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() =>
+                  navigate(
+                    `/prescriptions/compare/${comparison.newPrescriptionId}/${comparison.previousPrescriptionId}`
+                  )
+                }
+              >
+                View full comparison
+              </button>
+            </div>
+
+            <p className="verify-comparison-note">
+              These are review notices, not proof that the doctor intended a change. No earlier
+              medicine has been stopped automatically and no changed dose becomes active from this
+              screen. Please confirm every difference with the prescribing doctor or a qualified
+              healthcare professional.
+            </p>
+
+            <label className="verify-compare-ack">
+              <input
+                type="checkbox"
+                checked={comparisonAcknowledged}
+                onChange={e => setComparisonAcknowledged(e.target.checked)}
+              />
+              <span>
+                I have reviewed the differences and will confirm them with the prescribing doctor
+                before changing any medicine routine.
+              </span>
+            </label>
+          </section>
         )}
 
         <div className="verify-grid">
@@ -237,15 +295,24 @@ export function Verification() {
                 id="verify-btn"
                 className="btn btn-primary btn-lg"
                 onClick={handleVerify}
-                disabled={hasUnresolved}
-                aria-label={hasUnresolved ? 'Cannot verify — unresolved fields present' : 'Verify and activate medication schedule'}
+                disabled={verifyBlocked}
+                aria-label={verifyBlocked ? 'Cannot verify - resolve unclear fields and comparison review first' : 'Verify and activate medication schedule'}
               >
                 <CheckCircle size={18} aria-hidden="true" />
-                {hasUnresolved ? 'Resolve All Fields to Continue' : 'Verify & Activate Schedule'}
+                {hasUnresolved
+                  ? 'Resolve All Fields to Continue'
+                  : needsComparisonAck
+                    ? 'Confirm Comparison Review to Continue'
+                    : 'Verify & Activate Schedule'}
               </button>
               {hasUnresolved && (
                 <p className="verify-help">
                   All unclear fields must be manually corrected or removed before activating.
+                </p>
+              )}
+              {needsComparisonAck && !hasUnresolved && (
+                <p className="verify-help">
+                  Please acknowledge the prescription differences above before activating.
                 </p>
               )}
             </div>

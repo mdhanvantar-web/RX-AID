@@ -335,3 +335,61 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Comparison acknowledgment during verification */
+.verify-comparison-banner {
+  margin-top: var(--space-5);
+  border-left: 5px solid #ea580c;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.verify-comparison-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.verify-comparison-head .card-title { color: #9a3412; }
+
+.verify-comparison-sub {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
+  font-weight: 600;
+}
+
+.verify-comparison-note {
+  font-size: 0.92rem;
+  color: #7c2d12;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.verify-compare-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--bg-warm-tint);
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.verify-compare-ack input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+

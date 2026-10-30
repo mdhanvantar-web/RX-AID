@@ -77,6 +77,7 @@ Return ONLY a valid JSON object with this structure (no markdown, no explanation
       "timings": ["morning"|"afternoon"|"evening"|"night"],
       "foodInstruction": "string or null",
       "duration": "string or null",
+      "route": "string or null (only if explicitly written, e.g. oral, topical)",
       "notes": "string or null",
       "unclear": false,
       "unclearFields": []

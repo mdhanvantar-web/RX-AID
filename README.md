@@ -18,7 +18,7 @@ The hosted build currently runs in **synthetic demo mode** because no Gemini API
 
 ## 📌 Overview
 
-**RX-AID** is a caregiver-facing prescription assistance app for understanding handwritten paper prescriptions and turning them into an organised medication routine. A caregiver can photograph a prescription, let Google Gemini transcribe the visible instructions, review every extracted field, and then activate a daily schedule only after explicit human verification.
+**RX-AID** is a caregiver-facing prescription assistance app for understanding handwritten paper prescriptions and turning them into an organised medication routine. A caregiver can photograph a prescription, let Google Gemini transcribe the visible instructions, review every extracted field, and then activate a daily schedule only after explicit human verification. A built-in **Prescription Change Detector** compares a new scan with any saved earlier version and presents cautious, review-only notices for changed, added, missing, or unclear medicines.
 
 This repository contains the **RX-AID MVP**: a fully working frontend prototype with local persistence. It is **not** a production medical system, and it does not connect to real pharmacies, payment gateways, or clinical record systems.
 
@@ -35,6 +35,8 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 | Prescription upload, drag-and-drop, live camera, native camera | ✅ Implemented |
 | Gemini multimodal extraction with unreadable-field handling | ✅ Implemented (live with API key, synthetic demo without one) |
 | Human verification screen and safety lock | ✅ Implemented |
+| Prescription history, versioning, and cautious change detection | ✅ Implemented |
+| Prescription comparison screen and caregiver review notices | ✅ Implemented |
 | 7-day medication schedule and dose tracking | ✅ Implemented |
 | Pharmacy store selection and search | ✅ Demo implementation |
 | Multi-store price comparison | ✅ Demo implementation (3 catalog medicines) |
@@ -44,7 +46,8 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 | Real accounts and authentication | ❌ Demo only |
 | Backend, database, real pharmacy APIs, payments | ❌ Not implemented |
 | Push reminders / alarms | ❌ Not implemented |
-| Automated tests and CI | ❌ Not implemented |
+| Synthetic comparison-engine tests and headless UI smoke tests | ✅ Implemented (`npm run test:comparison`, `npm run test:ui`) |
+| CI pipeline | ❌ Not implemented |
 
 **Build check:** `npm run build` (TypeScript project build + Vite production build) succeeds. `npm run lint` completes with warnings only; there are no lint errors.
 
@@ -128,7 +131,32 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 - Prescriptions, schedule records, cart, orders, profile, and language preference are stored in `localStorage` under `rxaid_app_state_v2`.
 - No backend or database is required to run the demo.
 
-### 12. Experimental language scaffolding (`src/i18n/`)
+### 12. Prescription Change Detector (`/prescriptions`, `/prescriptions/compare/:newId/:baseId`)
+
+- **Prescription history** (`/prescriptions`) keeps every scan as a new version. Each version shows its scan date and time, original image, extracted medicines, verification status, and comparison history. Older versions are never overwritten.
+- **Compare across time** supports two entry points: choose any two saved versions side by side, or open an earlier version and select **Compare New Prescription**. The scanner then tags the new scan for comparison (`/scan?compareWith=<id>`).
+- **Comparison engine** (`src/services/prescriptionComparison.ts`) compares medicine name, strength, dose, frequency, route (only when explicitly written), timing slots, food instruction, duration, and additional notes. Formatting such as `500 mg` vs `500mg`, `BD` vs `twice daily`, or `Tab.` prefixes is normalised for comparison only — the original prescribed values are always displayed unchanged.
+- **Cautious matching:** identical normalised names match exactly. Names with ≥ 0.9 similarity are paired but always forced into **⚠️ Needs Review**; clearly different names are never treated as the same medicine. Brand/generic equivalence is never assumed because no trusted medicine reference is available.
+- **Categories** follow the required colour system: 🟢 UNCHANGED, 🔵 ADDED, 🟠 CHANGED, 🔴 NO LONGER LISTED, ⚠️ NEEDS REVIEW.
+- **Per-medicine cards** show the previous and new values, exact field-level difference tables, original-image reference buttons, review reasons, and a plain-language review status.
+- **Summary** at the top of the comparison screen counts total, unchanged, added, changed, no-longer-listed, and needs-review items. A warnings panel highlights uncertain spellings, unclear handwriting, missing information, duplicate entries, and frequency/timing conflicts.
+- **Both original images** can be reviewed individually or together in a modal before the caregiver marks the differences as reviewed.
+- **Human verification gate:** the new version stays an unverified draft. Marking the comparison as reviewed is not a medical confirmation. The verification screen (`/verify/:id`) shows a comparison banner and requires a separate acknowledgment before activation. On activation, the new version becomes the active prescription.
+- **Dashboard notifications** use non-alarming wording, for example “3 changes detected in your new prescription.”, “2 medicines need review.”, and “Your latest prescription is awaiting verification.”, with links back to the comparison and verification screens.
+- **Pharmacy and cart safety:** only the currently verified/latest active prescription feeds inventory and price comparison. Medicines with a changed or unresolved instruction are shown in a “needs clarification” block with ordering paused. Cart items that match a flagged medicine or reference an older prescription version pause checkout, and cart contents are never silently changed.
+- **Comparison records** are stored in `AppState.comparisons` and persisted under the existing `rxaid_app_state_v2` key, with pending/reviewed status and a generated timestamp.
+
+### Safety rules enforced by the Change Detector
+
+- Never automatically stop, start, merge, activate, or re-dose a medicine.
+- Never treat a medicine’s absence from the new prescription as confirmed discontinuation.
+- Never calculate or suggest a replacement dose.
+- Never hide ambiguity, unclear handwriting, or missing fields.
+- Never order or substitute a medicine based on an uncertain match.
+- Always instruct the caregiver to confirm changes with the prescribing doctor or a qualified healthcare professional.
+- Keep the new version pending until its extracted instructions are verified.
+
+### 13. Experimental language scaffolding (`src/i18n/`)
 - A 35-locale registry with region, text direction, speech locale, and native names.
 - 26 seeded translation dictionaries with English fallback.
 - RTL document-direction helper and CSS, plus browser speech-synthesis helpers.
@@ -149,7 +177,7 @@ The following are explicitly **not** part of this MVP:
 - **Multi-patient and multi-caregiver support.** The demo has one fixed patient profile.
 - **Broader document support.** Uploads are limited to JPEG, PNG, and WebP; PDF and HEIC are not supported.
 - **Full internationalisation.** The 35-locale catalog is partial and unconnected; RTL styling is not applied; voice read-aloud has no UI entry point.
-- **Automated tests and CI/CD.** There are no unit, integration, or end-to-end tests, and no deployment pipeline.
+- **Automated tests and CI/CD.** Synthetic comparison-engine tests and a headless browser UI smoke test exist locally, but there is no CI pipeline, no test on every pull request, and no real end-to-end suite covering camera permissions, live Gemini responses, or accessibility.
 - **Data privacy controls.** Prescription images and personal details are stored unencrypted in `localStorage`. There is no export, deletion workflow, encryption at rest, or retention policy.
 - **Production hardening.** No error monitoring, analytics consent, offline/PWA support, rate limiting, or load testing.
 - **Accessibility audit.** Good practices are in place, but there has been no formal WCAG audit; reduced-motion preferences and some advanced screen-reader flows still need work.
@@ -182,14 +210,19 @@ The following are explicitly **not** part of this MVP:
 │   ├── components/Navbar.*       # Desktop/mobile navigation and language toggle
 │   ├── context/AppContext.tsx    # Global state, reducer, persistence wiring
 │   ├── i18n/                     # Experimental 35-locale catalog, RTL and voice helpers
-│   ├── pages/                    # Dashboard, Scanner, Verification, Routine, Pharmacies,
+│   ├── pages/                    # Dashboard, Scanner, Verification, PrescriptionHistory,
+│   │                             # PrescriptionComparison, Routine, Pharmacies,
 │   │                             # PriceComparison, Cart, Orders, Profile, Login
 │   ├── services/
 │   │   ├── gemini.ts             # Gemini extraction prompt, demo fallback, error handling
 │   │   ├── pharmacyData.ts       # Synthetic stores, catalog, and price comparison
+│   │   ├── prescriptionComparison.ts  # Cautious matching, field diffs, review flags
 │   │   └── storage.ts            # localStorage load/save and state transitions
 │   ├── types/index.ts            # Shared TypeScript models
 │   └── utils/                    # Schedule generation and English/Telugu translations
+├── tests/
+│   ├── prescriptionComparison.test.mjs  # 10 synthetic comparison scenarios
+│   └── ui-smoke.mjs              # Headless Chrome desktop/mobile UI smoke test
 ├── .env.example                  # Safe environment template (no real key)
 ├── index.html
 ├── package.json
@@ -261,7 +294,25 @@ npm run preview
 npm run lint
 ```
 
-### 7. Deploy to Vercel
+### 7. Run the tests
+
+```bash
+# Synthetic comparison-engine scenarios (10 required cases + normalisation)
+npm run test:comparison
+
+# Desktop and mobile UI smoke test against the production preview build
+npm run test:ui
+```
+
+`test:ui` expects a production preview at `http://127.0.0.1:4173` and a local Chrome or Edge installation. Start one first:
+
+```bash
+npm run preview -- --port 4173 --strictPort --host 127.0.0.1
+```
+
+Set `CHROME_PATH` to use a different browser executable, or `RX_AID_URL` to point at another deployment.
+
+### 8. Deploy to Vercel
 
 The repository includes `vercel.json` (Vite build, `dist` output, and SPA deep-link rewrites) and `.vercelignore`. Import the GitHub repository in Vercel, or deploy from the CLI:
 
@@ -291,8 +342,11 @@ Add `VITE_GEMINI_API_KEY` in **Project Settings → Environment Variables** to e
 2. Gemini extracts only what is visibly written; unclear fields are flagged rather than guessed.
 3. The caregiver reviews the original image against every extracted field and corrects errors.
 4. Activation is blocked while key unclear fields remain unresolved.
-5. A 7-day schedule is generated only after verification.
-6. Dose status can be marked taken, missed, skipped, or reset.
+5. If the scan was started from **Compare New Prescription**, the extracted draft is compared with the selected earlier version. A new prescription version remains pending after the comparison.
+6. The caregiver reviews both original images and every difference, then explicitly marks the comparison as reviewed.
+7. The verification screen requires a separate comparison acknowledgment before activation.
+8. A 7-day schedule is generated only after verification, and only then does the new version become the active prescription for pharmacy and cart.
+9. Dose status can be marked taken, missed, skipped, or reset.
 
 ---
 

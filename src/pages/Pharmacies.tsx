@@ -15,26 +15,32 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PHARMACY_STORES, getProductsForStore } from '../services/pharmacyData';
-import type { MedicationEntry } from '../types';
+import {
+  findUnresolvedFlag,
+  getUnresolvedMedicineFlags,
+} from '../services/prescriptionComparison';
+import type { MedicationEntry, PharmacyProduct } from '../types';
 import './Pharmacies.css';
 
 export function Pharmacies() {
   const navigate = useNavigate();
   const { state, setSelectedPharmacy, addToCart } = useApp();
-  const { selectedPharmacyId, prescriptions } = state;
+  const { selectedPharmacyId, prescriptions, comparisons, activePrescriptionId } = state;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
 
-  // Extract all verified, clear medications from active prescriptions
+  // Use the currently verified prescription version only. Older versions stay
+  // saved in history but do not feed the pharmacy inventory.
+  const activePrescription =
+    prescriptions.find(rx => rx.id === activePrescriptionId && rx.status === 'active') ??
+    prescriptions.find(rx => rx.status === 'active') ??
+    null;
+
   const verifiedMeds: MedicationEntry[] = [];
-  for (const rx of prescriptions) {
-    if (rx.status === 'active' && rx.verified?.medications) {
-      for (const m of rx.verified.medications) {
-        if (!m.unclear) {
-          verifiedMeds.push(m);
-        }
-      }
+  if (activePrescription?.verified?.medications) {
+    for (const m of activePrescription.verified.medications) {
+      if (!m.unclear) verifiedMeds.push(m);
     }
   }
 
@@ -89,12 +95,19 @@ export function Pharmacies() {
   const selectedStore = PHARMACY_STORES.find(s => s.id === selectedPharmacyId) || PHARMACY_STORES[0];
   const storeProducts = getProductsForStore(selectedStore.id, effectiveMeds);
 
+  // Medicines in a pending comparison that changed or need review are never
+  // offered for ordering until the caregiver obtains professional clarification.
+  const comparisonFlags = getUnresolvedMedicineFlags(comparisons, prescriptions);
+  const flagFor = (medicineName: string) => findUnresolvedFlag(comparisonFlags, medicineName);
+  const safeProducts = storeProducts.filter(p => !flagFor(p.medicineName));
+  const flaggedProducts = storeProducts.filter(p => Boolean(flagFor(p.medicineName)));
+
   const handleSelectStore = (storeId: string) => {
     setSelectedPharmacy(storeId);
   };
 
-  const handleAddToCart = (product: typeof storeProducts[0]) => {
-    addToCart(product, 1);
+  const handleAddToCart = (product: PharmacyProduct) => {
+    addToCart(product, 1, activePrescription?.id);
     setJustAddedId(product.id);
     setTimeout(() => setJustAddedId(null), 1800);
   };
@@ -219,7 +232,8 @@ export function Pharmacies() {
                 Prescribed Medicines at <span className="highlight-store">{selectedStore.name}</span>
               </h2>
               <p className="inventory-sub">
-                Only showing exact matches for verified doctor prescription items. No unauthorized substitutes.
+                Only showing exact matches from your currently verified prescription version. No
+                unauthorized substitutes. Changed or unclear medicines are held for clarification.
               </p>
             </div>
 
@@ -232,8 +246,71 @@ export function Pharmacies() {
             </button>
           </div>
 
+          {flaggedProducts.length > 0 && (
+            <div className="pharmacy-flagged-block" role="alert">
+              <div className="pharmacy-flagged-head">
+                <ShieldAlert size={20} aria-hidden="true" />
+                <div>
+                  <h3>Needs clarification before ordering</h3>
+                  <p>
+                    These medicines have a changed or unresolved instruction in a new prescription.
+                    They cannot be ordered until a doctor or pharmacist clarifies the correct
+                    instruction. Nothing was changed in your cart automatically.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flagged-products-grid">
+                {flaggedProducts.map(product => {
+                  const flag = flagFor(product.medicineName);
+                  return (
+                    <div key={`flagged-${product.id}`} className="product-card product-card--flagged">
+                      <div className="product-top">
+                        <span className="badge badge-warning">Needs clarification</span>
+                      </div>
+                      <h3 className="product-title">{product.medicineName}</h3>
+                      <div className="product-details-list">
+                        <p><strong>Strength:</strong> {product.strength}</p>
+                        <p><strong>Form:</strong> {product.dosageForm}</p>
+                        <p><strong>Packaging:</strong> {product.packInfo}</p>
+                      </div>
+                      <p className="flagged-reason">
+                        {flag?.reasons[0] ??
+                          'A difference was detected in a new prescription. Please obtain professional clarification.'}
+                      </p>
+                      <div className="product-price-row">
+                        <span className="product-price">₹{product.price.toFixed(2)}</span>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled
+                          aria-label={`Cannot add ${product.medicineName} until the instruction is clarified`}
+                        >
+                          Order paused
+                        </button>
+                      </div>
+                      {flag && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm flagged-review-link"
+                          onClick={() =>
+                            navigate(
+                              `/prescriptions/compare/${flag.newPrescriptionId}/${flag.previousPrescriptionId}`
+                            )
+                          }
+                        >
+                          Review the comparison
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="product-cards-grid">
-            {storeProducts.map(product => {
+            {safeProducts.map(product => {
               const wasAdded = justAddedId === product.id;
               return (
                 <div key={product.id} className="product-card">

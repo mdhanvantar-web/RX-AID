@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getTodayDoses, getTimingTime, getAdherenceRate, formatPrescriptionDate } from '../utils/scheduleUtils';
+import { getLatestComparison } from '../services/prescriptionComparison';
 import { TRANSLATIONS, getTimingLabelFriendly } from '../utils/translations';
 import type { MedicationTiming } from '../types';
 import './Dashboard.css';
@@ -25,12 +26,27 @@ const TIMING_ORDER: MedicationTiming[] = ['morning', 'afternoon', 'evening', 'ni
 export function Dashboard() {
   const navigate = useNavigate();
   const { state, markDose } = useApp();
-  const { patient, prescriptions, doses, language, user } = state;
+  const { patient, prescriptions, doses, language, user, comparisons } = state;
   const t = TRANSLATIONS[language];
 
   const todayDoses = getTodayDoses(doses);
   const adherenceRate = getAdherenceRate(doses);
   const activePrescription = prescriptions.find(p => p.status === 'active') || prescriptions[0] || null;
+
+  const latestComparison = getLatestComparison(comparisons);
+  const pendingComparison =
+    latestComparison &&
+    latestComparison.status === 'pending' &&
+    prescriptions.find(p => p.id === latestComparison.newPrescriptionId)?.status !== 'active'
+      ? latestComparison
+      : null;
+  const pendingVerification = prescriptions.find(p => p.status === 'extracted') ?? null;
+  const comparisonChangeCount = pendingComparison
+    ? pendingComparison.result.summary.added +
+      pendingComparison.result.summary.changed +
+      pendingComparison.result.summary.removed
+    : 0;
+  const comparisonReviewCount = pendingComparison?.result.summary.needsReview ?? 0;
 
   const takenToday = todayDoses.filter(d => d.status === 'taken').length;
   const totalToday = todayDoses.length;
@@ -104,6 +120,94 @@ export function Dashboard() {
             </div>
           </div>
         </section>
+
+        {/* ─── Prescription Change Notifications ─── */}
+        {(pendingComparison || pendingVerification) && (
+          <section className="dashboard-notifications animate-fade-in" aria-label="Prescription notifications">
+            {pendingComparison && (
+              <div className="notification-card card notification-card--compare">
+                <div className="notification-icon" aria-hidden="true">
+                  <Scale size={22} />
+                </div>
+                <div className="notification-body">
+                  <h3>
+                    {comparisonChangeCount > 0
+                      ? `${comparisonChangeCount} change${comparisonChangeCount === 1 ? '' : 's'} detected in your new prescription.`
+                      : 'Your new prescription has been compared.'}
+                  </h3>
+                  <p>
+                    These are review notices, not confirmed medical changes. Please review them with
+                    the original prescription.
+                  </p>
+                  <div className="notification-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() =>
+                        navigate(
+                          `/prescriptions/compare/${pendingComparison.newPrescriptionId}/${pendingComparison.previousPrescriptionId}`
+                        )
+                      }
+                    >
+                      Review changes <ChevronRight size={15} aria-hidden="true" />
+                    </button>
+                    {pendingVerification && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => navigate(`/verify/${pendingVerification.id}`)}
+                      >
+                        Verify latest prescription
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {pendingComparison && comparisonReviewCount > 0 && (
+              <div className="notification-card card notification-card--review">
+                <div className="notification-icon" aria-hidden="true">
+                  <AlertTriangle size={22} />
+                </div>
+                <div className="notification-body">
+                  <h3>
+                    {comparisonReviewCount} medicine{comparisonReviewCount === 1 ? '' : 's'} need
+                    {comparisonReviewCount === 1 ? 's' : ''} review.
+                  </h3>
+                  <p>
+                    Handwriting or medicine identity may be unclear. Please confirm with your doctor or
+                    pharmacist.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {pendingVerification && (
+              <div className="notification-card card notification-card--pending">
+                <div className="notification-icon" aria-hidden="true">
+                  <Clock size={22} />
+                </div>
+                <div className="notification-body">
+                  <h3>Your latest prescription is awaiting verification.</h3>
+                  <p>
+                    It stays an unverified draft until you review the extracted instructions. No
+                    medicine routine changes automatically.
+                  </p>
+                  <div className="notification-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => navigate(`/verify/${pendingVerification.id}`)}
+                    >
+                      Review and verify <ChevronRight size={15} aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* ─── Fast Caregiver Action Banners ─── */}
         <section className="quick-services-row animate-fade-in" aria-label="Caregiver Quick Services">
@@ -266,13 +370,23 @@ export function Dashboard() {
                 <Sparkles size={20} aria-hidden="true" />
                 Prescriptions
               </h2>
-              <button
-                id="add-rx-shortcut"
-                className="btn btn-secondary btn-sm"
-                onClick={() => navigate('/scan')}
-              >
-                + Add New
-              </button>
+              <div className="rx-history-header-actions">
+                <button
+                  id="view-all-rx-btn"
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => navigate('/prescriptions')}
+                >
+                  View All
+                </button>
+                <button
+                  id="add-rx-shortcut"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => navigate('/scan')}
+                >
+                  + Add New
+                </button>
+              </div>
             </div>
 
             {prescriptions.length === 0 ? (

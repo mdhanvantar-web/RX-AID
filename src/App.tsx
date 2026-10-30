@@ -11,6 +11,8 @@ import { Cart } from './pages/Cart';
 import { Orders } from './pages/Orders';
 import { Profile } from './pages/Profile';
 import { Login } from './pages/Login';
+import { PrescriptionHistory } from './pages/PrescriptionHistory';
+import { PrescriptionComparison } from './pages/PrescriptionComparison';
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/scan" element={<Scanner />} />
             <Route path="/verify/:id" element={<Verification />} />
+            <Route path="/prescriptions" element={<PrescriptionHistory />} />
+            <Route path="/prescriptions/compare/:newId/:baseId" element={<PrescriptionComparison />} />
             <Route path="/routine" element={<Routine />} />
             <Route path="/pharmacies" element={<Pharmacies />} />
             <Route path="/compare" element={<PriceComparison />} />

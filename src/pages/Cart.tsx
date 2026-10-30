@@ -10,12 +10,17 @@ import {
   MapPin,
   ShieldCheck,
   AlertCircle,
+  AlertTriangle,
   ArrowRight,
   Store,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PHARMACY_STORES } from '../services/pharmacyData';
-import type { OrderRecord } from '../types';
+import {
+  findUnresolvedFlag,
+  getUnresolvedMedicineFlags,
+} from '../services/prescriptionComparison';
+import type { CartItem, OrderRecord } from '../types';
 import './Cart.css';
 
 export function Cart() {
@@ -29,8 +34,41 @@ export function Cart() {
     updateUser,
   } = useApp();
 
-  const { cart, selectedPharmacyId, user } = state;
+  const { cart, selectedPharmacyId, user, prescriptions, comparisons, activePrescriptionId } = state;
   const store = PHARMACY_STORES.find(s => s.id === selectedPharmacyId) || PHARMACY_STORES[0];
+
+  const comparisonFlags = getUnresolvedMedicineFlags(comparisons, prescriptions);
+  const activeId =
+    prescriptions.find(rx => rx.id === activePrescriptionId && rx.status === 'active')?.id ??
+    prescriptions.find(rx => rx.status === 'active')?.id ??
+    null;
+
+  const issueForItem = (item: CartItem): { label: string; reason: string; comparisonPath: string | null } | null => {
+    const flag = findUnresolvedFlag(comparisonFlags, item.product.medicineName);
+    if (flag) {
+      return {
+        label: 'Needs clarification',
+        reason:
+          flag.reasons[0] ??
+          'A changed or unclear instruction was detected. Please confirm with a doctor or pharmacist.',
+        comparisonPath: `/prescriptions/compare/${flag.newPrescriptionId}/${flag.previousPrescriptionId}`,
+      };
+    }
+    if (item.prescriptionId && activeId && item.prescriptionId !== activeId) {
+      return {
+        label: 'Older prescription version',
+        reason:
+          'This item was added from an earlier prescription version. Review the current verified version before ordering.',
+        comparisonPath: null,
+      };
+    }
+    return null;
+  };
+
+  const flaggedItems = cart
+    .map(item => ({ item, issue: issueForItem(item) }))
+    .filter(entry => entry.issue !== null);
+  const orderBlocked = flaggedItems.length > 0;
 
   const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
   const [address, setAddress] = useState(user.deliveryAddress || 'Flat 302, Shanti Nilayam, Green Hills Road, Hyderabad');
@@ -45,6 +83,8 @@ export function Cart() {
   const grandTotal = subtotal + deliveryFee;
 
   const handlePlaceOrder = () => {
+    if (orderBlocked) return;
+
     // Save address in profile
     updateUser({ deliveryAddress: address, phone });
 
@@ -154,6 +194,43 @@ export function Cart() {
           </button>
         </div>
 
+        {flaggedItems.length > 0 && (
+          <div className="cart-flag-banner card animate-fade-in" role="alert">
+            <AlertTriangle size={22} className="cart-flag-icon" aria-hidden="true" />
+            <div className="cart-flag-body">
+              <h2>Ordering paused for {flaggedItems.length} item{flaggedItems.length === 1 ? '' : 's'}</h2>
+              <p>
+                These items have a changed, unclear, or older-prescription match. They will not be
+                ordered automatically. Please confirm the correct instruction with the prescribing
+                doctor or a qualified healthcare professional.
+              </p>
+              <ul>
+                {flaggedItems.map(({ item, issue }) => (
+                  <li key={item.id}>
+                    <strong>{item.product.medicineName}</strong> — {issue?.label}. {issue?.reason}
+                    {issue?.comparisonPath && (
+                      <>
+                        {' '}
+                        <button
+                          type="button"
+                          className="link-btn"
+                          onClick={() => navigate(issue.comparisonPath as string)}
+                        >
+                          Review comparison
+                        </button>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="cart-flag-note">
+                Your cart was not changed automatically. Remove these items or wait until the
+                instructions are clarified and verified.
+              </p>
+            </div>
+          </div>
+        )}
+
         {cart.length === 0 ? (
           <div className="empty-cart-card card animate-fade-in">
             <div className="empty-cart-icon" aria-hidden="true">🛍️</div>
@@ -191,7 +268,9 @@ export function Cart() {
                 {cart.map(item => (
                   <div key={item.id} className="cart-item-row" role="listitem">
                     <div className="item-info">
-                      <span className="badge badge-success item-badge">Doctor Prescribed</span>
+                      <span className={`badge ${issueForItem(item) ? 'badge-warning' : 'badge-success'} item-badge`}>
+                        {issueForItem(item)?.label ?? 'Doctor Prescribed'}
+                      </span>
                       <h3 className="item-name">{item.product.medicineName}</h3>
                       <p className="item-pack">{item.product.packInfo} · {item.product.dosageForm}</p>
                       <p className="item-unit-price">₹{item.product.price.toFixed(2)} / pack</p>
@@ -329,10 +408,18 @@ export function Cart() {
                   type="button"
                   className="btn btn-primary btn-lg checkout-btn"
                   onClick={() => setIsReviewOpen(true)}
+                  disabled={orderBlocked}
                 >
-                  <span>Review Order Before Placing</span>
+                  <span>{orderBlocked ? 'Resolve Flagged Medicines Before Ordering' : 'Review Order Before Placing'}</span>
                   <ArrowRight size={18} aria-hidden="true" />
                 </button>
+
+                {orderBlocked && (
+                  <p className="cod-notice cod-notice--blocked" role="alert">
+                    Ordering is paused until the flagged medicines are clarified with a doctor or
+                    pharmacist.
+                  </p>
+                )}
 
                 <p className="cod-notice">
                   Pay upon delivery via Cash, UPI, or Card. No immediate advance payment required.
@@ -397,6 +484,7 @@ export function Cart() {
                   type="button"
                   className="btn btn-primary btn-lg"
                   onClick={handlePlaceOrder}
+                  disabled={orderBlocked}
                 >
                   <CheckCircle size={18} aria-hidden="true" />
                   Confirm & Place Order

@@ -6,6 +6,7 @@ import type {
   UserProfile,
   CartItem,
   OrderRecord,
+  PrescriptionComparisonRecord,
 } from '../types';
 
 const STORAGE_KEY = 'rxaid_app_state_v2';
@@ -41,6 +42,7 @@ const DEFAULT_STATE: AppState = {
   selectedPharmacyId: 'store-local',
   cart: [],
   orders: [],
+  comparisons: [],
   language: 'en',
 };
 
@@ -58,6 +60,7 @@ export function loadState(): AppState {
       doses: parsed.doses ?? [],
       cart: parsed.cart ?? [],
       orders: parsed.orders ?? [],
+      comparisons: parsed.comparisons ?? [],
       selectedPharmacyId: parsed.selectedPharmacyId ?? 'store-local',
       language: parsed.language ?? 'en',
     };
@@ -151,6 +154,32 @@ export function clearCart(state: AppState): AppState {
 export function addOrder(state: AppState, order: OrderRecord): AppState {
   const orders = [order, ...state.orders];
   const next = { ...state, orders, cart: [] }; // clear cart on order placed
+  saveState(next);
+  return next;
+}
+
+export function saveComparison(
+  state: AppState,
+  comparison: PrescriptionComparisonRecord
+): AppState {
+  const existing = state.comparisons.findIndex(c => c.id === comparison.id);
+  let comparisons: PrescriptionComparisonRecord[];
+  if (existing >= 0) {
+    comparisons = [...state.comparisons];
+    comparisons[existing] = comparison;
+  } else {
+    comparisons = [comparison, ...state.comparisons];
+  }
+  const next = { ...state, comparisons };
+  saveState(next);
+  return next;
+}
+
+export function markComparisonReviewed(state: AppState, comparisonId: string): AppState {
+  const comparisons = state.comparisons.map(c =>
+    c.id === comparisonId ? { ...c, status: 'reviewed' as const } : c
+  );
+  const next = { ...state, comparisons };
   saveState(next);
   return next;
 }

@@ -9,6 +9,7 @@ import type {
   OrderRecord,
   AppLanguage,
   UserProfile,
+  PrescriptionComparisonRecord,
 } from '../types';
 import {
   loadState,
@@ -21,6 +22,8 @@ import {
   removeFromCart as persistRemoveFromCart,
   clearCart as persistClearCart,
   addOrder as persistAddOrder,
+  saveComparison as persistComparison,
+  markComparisonReviewed as persistComparisonReviewed,
 } from '../services/storage';
 
 // ─── Actions ───────────────────────────────────────────────────────────────
@@ -36,6 +39,8 @@ type Action =
   | { type: 'REMOVE_FROM_CART'; payload: string }
   | { type: 'CLEAR_CART' }
   | { type: 'ADD_ORDER'; payload: OrderRecord }
+  | { type: 'UPSERT_COMPARISON'; payload: PrescriptionComparisonRecord }
+  | { type: 'MARK_COMPARISON_REVIEWED'; payload: string }
   | { type: 'SET_LANGUAGE'; payload: AppLanguage }
   | { type: 'UPDATE_USER'; payload: Partial<UserProfile> }
   | { type: 'LOGOUT' };
@@ -89,6 +94,12 @@ function reducer(state: AppState, action: Action): AppState {
     case 'ADD_ORDER':
       return persistAddOrder(state, action.payload);
 
+    case 'UPSERT_COMPARISON':
+      return persistComparison(state, action.payload);
+
+    case 'MARK_COMPARISON_REVIEWED':
+      return persistComparisonReviewed(state, action.payload);
+
     case 'SET_LANGUAGE': {
       const next = { ...state, language: action.payload };
       saveState(next);
@@ -128,6 +139,8 @@ interface AppContextValue {
   removeFromCart: (itemId: string) => void;
   clearCart: () => void;
   createOrder: (order: OrderRecord) => void;
+  saveComparison: (comparison: PrescriptionComparisonRecord) => void;
+  markComparisonReviewed: (comparisonId: string) => void;
   setLanguage: (lang: AppLanguage) => void;
   updateUser: (updates: Partial<UserProfile>) => void;
   logout: () => void;
@@ -188,6 +201,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'ADD_ORDER', payload: order });
   }, []);
 
+  const saveComparison = useCallback((comparison: PrescriptionComparisonRecord) => {
+    dispatch({ type: 'UPSERT_COMPARISON', payload: comparison });
+  }, []);
+
+  const markComparisonReviewed = useCallback((comparisonId: string) => {
+    dispatch({ type: 'MARK_COMPARISON_REVIEWED', payload: comparisonId });
+  }, []);
+
   const setLanguage = useCallback((lang: AppLanguage) => {
     dispatch({ type: 'SET_LANGUAGE', payload: lang });
   }, []);
@@ -216,6 +237,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         clearCart,
         createOrder,
+        saveComparison,
+        markComparisonReviewed,
         setLanguage,
         updateUser,
         logout,

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { format } from 'date-fns';
 import {
   Upload,
   Camera,
@@ -27,7 +28,14 @@ type ScanState = 'idle' | 'live-camera' | 'captured-review' | 'preview' | 'proce
 
 export function Scanner() {
   const navigate = useNavigate();
-  const { upsertPrescription } = useApp();
+  const [searchParams] = useSearchParams();
+  const { state, upsertPrescription } = useApp();
+
+  const compareWithId = searchParams.get('compareWith');
+  const compareBasePrescription = compareWithId
+    ? state.prescriptions.find(rx => rx.id === compareWithId) ?? null
+    : null;
+  const isCompareMode = Boolean(compareBasePrescription?.id);
 
   const [scanState, setScanState] = useState<ScanState>('idle');
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
@@ -291,8 +299,15 @@ export function Scanner() {
       };
       upsertPrescription(updatedRx);
       setScanState('done');
-      // Navigate to verification after brief success display
-      setTimeout(() => navigate(`/verify/${id}`), 1200);
+      // Navigate to verification, or to the comparison screen when the
+      // caregiver started from "Compare New Prescription".
+      setTimeout(() => {
+        if (isCompareMode && compareWithId) {
+          navigate(`/prescriptions/compare/${id}/${compareWithId}`);
+        } else {
+          navigate(`/verify/${id}`);
+        }
+      }, 1200);
     } else {
       const msg = result.error ?? 'AI extraction failed. Please try again.';
       setErrorMsg(msg);
@@ -330,6 +345,27 @@ export function Scanner() {
               </p>
             </div>
           </header>
+
+          {isCompareMode && compareBasePrescription && (
+            <div className="compare-mode-banner animate-fade-in" role="note">
+              <div className="compare-mode-text">
+                <Info size={20} aria-hidden="true" />
+                <p>
+                  <strong>Comparison mode:</strong> this new scan will be compared with the
+                  prescription saved on{' '}
+                  <strong>{format(new Date(compareBasePrescription.uploadedAt), 'dd MMM yyyy, h:mm a')}</strong>.
+                  The earlier prescription is kept unchanged as its own version.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => navigate('/prescriptions')}
+              >
+                Cancel comparison
+              </button>
+            </div>
+          )}
 
           {/* ─── Safety & Privacy Notice ─── */}
           <div className="safety-notice animate-fade-in" role="note">
@@ -441,7 +477,7 @@ export function Scanner() {
                   <div className="success-overlay" aria-live="polite">
                     <CheckCircle size={48} className="success-icon" aria-hidden="true" />
                     <p>Prescription Read Successfully!</p>
-                    <p className="processing-sub">Opening verification screen…</p>
+                    <p className="processing-sub">{isCompareMode ? 'Opening comparison screen…' : 'Opening verification screen…'}</p>
                   </div>
                 )}
 

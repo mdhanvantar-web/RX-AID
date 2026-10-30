@@ -7,6 +7,8 @@
     "dev": "vite --port 5180 --strictPort",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test:comparison": "node --experimental-strip-types tests/prescriptionComparison.test.mjs",
+    "test:ui": "node tests/ui-smoke.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

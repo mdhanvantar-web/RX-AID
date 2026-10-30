@@ -10,25 +10,30 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAllPriceComparisons } from '../services/pharmacyData';
+import {
+  findUnresolvedFlag,
+  getUnresolvedMedicineFlags,
+} from '../services/prescriptionComparison';
 import type { MedicationEntry, PharmacyProduct } from '../types';
 import './PriceComparison.css';
 
 export function PriceComparison() {
   const navigate = useNavigate();
   const { state, addToCart } = useApp();
-  const { prescriptions } = state;
+  const { prescriptions, comparisons: comparisonRecords, activePrescriptionId } = state;
 
   const [addedItemMap, setAddedItemMap] = useState<Record<string, boolean>>({});
 
-  // Collect verified clear medications from all active prescriptions
+  // Use the currently verified prescription version only.
+  const activePrescription =
+    prescriptions.find(rx => rx.id === activePrescriptionId && rx.status === 'active') ??
+    prescriptions.find(rx => rx.status === 'active') ??
+    null;
+
   const verifiedMeds: MedicationEntry[] = [];
-  for (const rx of prescriptions) {
-    if (rx.status === 'active' && rx.verified?.medications) {
-      for (const m of rx.verified.medications) {
-        if (!m.unclear) {
-          verifiedMeds.push(m);
-        }
-      }
+  if (activePrescription?.verified?.medications) {
+    for (const m of activePrescription.verified.medications) {
+      if (!m.unclear) verifiedMeds.push(m);
     }
   }
 
@@ -75,10 +80,18 @@ export function PriceComparison() {
     },
   ];
 
-  const comparisons = getAllPriceComparisons(effectiveMeds);
+  const comparisonFlags = getUnresolvedMedicineFlags(comparisonRecords, prescriptions);
+  const flaggedMeds = effectiveMeds
+    .map(med => ({ med, flag: findUnresolvedFlag(comparisonFlags, med.medicineName) }))
+    .filter(entry => Boolean(entry.flag));
+  const safeMeds = effectiveMeds.filter(
+    med => !findUnresolvedFlag(comparisonFlags, med.medicineName)
+  );
+
+  const priceComparisons = getAllPriceComparisons(safeMeds);
 
   const handleAddToCart = (product: PharmacyProduct) => {
-    addToCart(product, 1);
+    addToCart(product, 1, activePrescription?.id);
     setAddedItemMap(prev => ({ ...prev, [product.id]: true }));
     setTimeout(() => {
       setAddedItemMap(prev => ({ ...prev, [product.id]: false }));
@@ -117,9 +130,59 @@ export function PriceComparison() {
           </span>
         </div>
 
+        {/* Medicines held for clarification */}
+        {flaggedMeds.length > 0 && (
+          <div className="price-flagged-banner card animate-fade-in" role="alert">
+            <ShieldAlert size={20} aria-hidden="true" />
+            <div>
+              <h2>Some medicines need professional clarification</h2>
+              <p>
+                These medicines have a changed or unresolved instruction in a new prescription, so
+                they are not available for ordering here:
+              </p>
+              <ul>
+                {flaggedMeds.map(({ med, flag }) => (
+                  <li key={med.id}>
+                    <strong>{med.medicineName}</strong>
+                    {flag && (
+                      <>
+                        {' — '}
+                        <button
+                          type="button"
+                          className="link-btn"
+                          onClick={() =>
+                            navigate(
+                              `/prescriptions/compare/${flag.newPrescriptionId}/${flag.previousPrescriptionId}`
+                            )
+                          }
+                        >
+                          review the comparison
+                        </button>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="price-flagged-note">
+                Nothing was added to or removed from your cart automatically. Please obtain
+                clarification from a doctor or pharmacist.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Comparison Tables per Prescribed Medicine */}
         <div className="comparison-groups-list stagger">
-          {comparisons.map(({ medication, offers, bestOffer }) => (
+          {priceComparisons.length === 0 && (
+            <div className="card empty-price-comparison">
+              <p className="empty-title">No medicines available to price-compare</p>
+              <p className="empty-sub">
+                Verify a prescription first, or resolve the flagged medicines above with your doctor or
+                pharmacist.
+              </p>
+            </div>
+          )}
+          {priceComparisons.map(({ medication, offers, bestOffer }) => (
             <section
               key={medication.id}
               className="card medicine-compare-card"

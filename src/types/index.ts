@@ -14,6 +14,7 @@ export interface MedicationEntry {
   foodInstruction: string | null; // e.g., 'before food', 'after food', 'with food'
   duration: string | null;
   notes: string | null;
+  route?: string | null; // only when explicitly written on the prescription
   unclear: boolean;
   unclearFields: string[];
 }
@@ -133,7 +134,62 @@ export interface AppState {
   selectedPharmacyId: string;
   cart: CartItem[];
   orders: OrderRecord[];
+  comparisons: PrescriptionComparisonRecord[];
   language: AppLanguage;
+}
+
+/* ── Prescription Change Detector ─────────────────────────────── */
+
+export type ComparisonCategory =
+  | 'unchanged'
+  | 'added'
+  | 'changed'
+  | 'removed'
+  | 'needs_review';
+
+export type MedicineMatchType = 'exact' | 'uncertain' | 'none';
+
+export interface ComparisonFieldDiff {
+  field: string;
+  label: string;
+  previousValue: string | null;
+  newValue: string | null;
+  changed: boolean;
+}
+
+export interface ComparedMedicine {
+  id: string;
+  category: ComparisonCategory;
+  previous: MedicationEntry | null;
+  next: MedicationEntry | null;
+  matchType: MedicineMatchType;
+  diffs: ComparisonFieldDiff[];
+  reviewReasons: string[];
+}
+
+export interface ComparisonSummary {
+  total: number;
+  unchanged: number;
+  added: number;
+  changed: number;
+  removed: number;
+  needsReview: number;
+}
+
+export interface PrescriptionComparisonResult {
+  items: ComparedMedicine[];
+  summary: ComparisonSummary;
+  warnings: string[];
+  generatedAt: string;
+}
+
+export interface PrescriptionComparisonRecord {
+  id: string;
+  previousPrescriptionId: string;
+  newPrescriptionId: string;
+  createdAt: string;
+  status: 'pending' | 'reviewed';
+  result: PrescriptionComparisonResult;
 }
 
 export interface GeminiExtractionResult {

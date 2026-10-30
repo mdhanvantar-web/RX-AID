@@ -421,3 +421,63 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Prescription change notifications */
+.dashboard-notifications {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.notification-card {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4);
+  border-left: 5px solid var(--color-primary);
+}
+
+.notification-card--compare { border-left-color: #2563eb; background: #f8fafc; }
+.notification-card--review { border-left-color: #7e22ce; background: #faf5ff; }
+.notification-card--pending { border-left-color: #d97706; background: #fffdf5; }
+
+.notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.notification-card--compare .notification-icon { background: #dbeafe; color: #1d4ed8; }
+.notification-card--review .notification-icon { background: #f3e8ff; color: #7e22ce; }
+.notification-card--pending .notification-icon { background: #fef3c7; color: #b45309; }
+
+.notification-body h3 {
+  font-size: 1.02rem;
+  line-height: 1.4;
+}
+
+.notification-body p {
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
+.notification-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+.rx-history-header-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
