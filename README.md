@@ -1,5 +1,4 @@
-# RX-AID
-AI-powered prescription understanding and caregiver assistance
+
 # RX-AID
 
 > **Intelligent Prescription Assistance for Every Caregiver.**
