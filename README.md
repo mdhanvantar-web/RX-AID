@@ -8,6 +8,14 @@
 
 ---
 
+## 🌐 Live Demo
+
+**https://rx-aid.vercel.app**
+
+The hosted build currently runs in **synthetic demo mode** because no Gemini API key is configured. Add `VITE_GEMINI_API_KEY` in the Vercel project settings to enable live extraction.
+
+---
+
 ## 📌 Overview
 
 **RX-AID** is a caregiver-facing prescription assistance app for understanding handwritten paper prescriptions and turning them into an organised medication routine. A caregiver can photograph a prescription, let Google Gemini transcribe the visible instructions, review every extracted field, and then activate a daily schedule only after explicit human verification.
@@ -252,6 +260,16 @@ npm run preview
 ```bash
 npm run lint
 ```
+
+### 7. Deploy to Vercel
+
+The repository includes `vercel.json` (Vite build, `dist` output, and SPA deep-link rewrites) and `.vercelignore`. Import the GitHub repository in Vercel, or deploy from the CLI:
+
+```bash
+vercel --prod
+```
+
+Add `VITE_GEMINI_API_KEY` in **Project Settings → Environment Variables** to enable live AI extraction. Without it, the deployment runs safely in synthetic demo mode.
 
 ---
 
