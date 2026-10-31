@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getAllPriceComparisons } from '../services/pharmacyData';
+import { SAMPLE_MEDICATIONS } from '../services/demoData';
 import {
   findUnresolvedFlag,
   getUnresolvedMedicineFlags,
@@ -37,48 +38,8 @@ export function PriceComparison() {
     }
   }
 
-  // Fallback demo medications if user navigates here before scanning
-  const effectiveMeds: MedicationEntry[] = verifiedMeds.length > 0 ? verifiedMeds : [
-    {
-      id: 'demo-med-1',
-      medicineName: 'Metformin',
-      strength: '500mg',
-      dose: '1 tablet',
-      frequency: 'Twice daily',
-      timings: ['morning', 'evening'],
-      foodInstruction: 'After food',
-      duration: '30 days',
-      notes: null,
-      unclear: false,
-      unclearFields: [],
-    },
-    {
-      id: 'demo-med-2',
-      medicineName: 'Amlodipine',
-      strength: '5mg',
-      dose: '1 tablet',
-      frequency: 'Once daily',
-      timings: ['morning'],
-      foodInstruction: 'Before food',
-      duration: '30 days',
-      notes: null,
-      unclear: false,
-      unclearFields: [],
-    },
-    {
-      id: 'demo-med-3',
-      medicineName: 'Atorvastatin',
-      strength: '10mg',
-      dose: '1 tablet',
-      frequency: 'Once daily',
-      timings: ['night'],
-      foodInstruction: null,
-      duration: '30 days',
-      notes: null,
-      unclear: false,
-      unclearFields: [],
-    },
-  ];
+  // Sample medicines are shown until a prescription has been verified.
+  const effectiveMeds: MedicationEntry[] = verifiedMeds.length > 0 ? verifiedMeds : SAMPLE_MEDICATIONS;
 
   const comparisonFlags = getUnresolvedMedicineFlags(comparisonRecords, prescriptions);
   const flaggedMeds = effectiveMeds
@@ -122,11 +83,13 @@ export function PriceComparison() {
           </button>
         </header>
 
-        {/* Demo Data & Clinical Equivalence Notice */}
+        {/* Price & Clinical Safety Notice */}
         <div className="demo-banner animate-fade-in" role="note">
           <ShieldAlert size={18} aria-hidden="true" />
           <span>
-            <strong>DEMO DATA & CLINICAL SAFETY NOTICE:</strong> All listed prices and delivery charges are synthetic models. We only compare genuine clinically equivalent formulations from certified pharmaceutical catalogues. Never change prescribed medications without consulting a licensed physician or pharmacist.
+            <strong>Price & Clinical Safety Notice:</strong> Listed prices and delivery charges
+            are illustrative. Only clinically equivalent formulations are compared. Never change
+            prescribed medications without consulting a licensed physician or pharmacist.
           </span>
         </div>
 

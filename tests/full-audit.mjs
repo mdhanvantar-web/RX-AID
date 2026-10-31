@@ -357,6 +357,7 @@ async function main() {
         assert.equal(overflow, true, 'horizontal overflow');
         assert.deepEqual(brokenImages, [], `broken images: ${brokenImages.join(', ')}`);
         assert.ok(height > 400, 'page appears blank');
+        assert.equal(/demo/i.test(body), false, 'visible demo wording remains');
         assert.deepEqual(cdp.errors, [], `runtime/console errors: ${cdp.errors.join(' | ')}`);
       });
       await screenshot(`desktop-${route.name.toLowerCase().replace(/\s+/g, '-')}`);
@@ -374,6 +375,7 @@ async function main() {
       check(`mobile ${route.name}: renders without horizontal overflow`, () => {
         assert.ok(body.includes(route.text), `missing expected text "${route.text}"`);
         assert.equal(overflow, true, 'horizontal overflow');
+        assert.equal(/demo/i.test(body), false, 'visible demo wording remains');
         assert.deepEqual(cdp.errors, [], `runtime/console errors: ${cdp.errors.join(' | ')}`);
       });
       await screenshot(`mobile-${route.name.toLowerCase().replace(/\s+/g, '-')}`);
@@ -478,6 +480,32 @@ async function main() {
     check('dashboard clears pending comparison and verification notices after activation', () => {
       assert.equal(dashboardBody.includes('changes detected in your new prescription'), false);
       assert.equal(dashboardBody.includes('awaiting verification'), false);
+    });
+
+    /* ── Expanded sample medicine list ───────────────────────── */
+    await evaluate("localStorage.removeItem('rxaid_app_state_v2'); true;");
+    await navigate('/pharmacies');
+    const samplePharmacies = await waitForText('Pharmacy Stores');
+    const sampleNames = [
+      'Metformin',
+      'Amlodipine',
+      'Atorvastatin',
+      'Telmisartan',
+      'Pantoprazole',
+      'Levothyroxine',
+    ];
+    check('pharmacy sample list includes the expanded medicine catalogue', () => {
+      for (const name of sampleNames) {
+        assert.ok(samplePharmacies.includes(name), `missing ${name}`);
+      }
+    });
+
+    await navigate('/compare');
+    const samplePrices = await waitForText('Medicine Price Comparison');
+    check('price comparison includes the expanded medicine catalogue', () => {
+      for (const name of sampleNames) {
+        assert.ok(samplePrices.includes(name), `missing ${name}`);
+      }
     });
 
     console.log(`\nScreenshots: ${screenshotDir}`);

@@ -468,7 +468,7 @@ export function Cart() {
 
               <div className="demo-modal-alert">
                 <AlertCircle size={16} aria-hidden="true" />
-                <span>DEMO ORDER: This will record a local synthetic order in your 'My Orders' log.</span>
+                <span>This order will be recorded in your My Orders log on this device.</span>
               </div>
 
               <div className="modal-actions">

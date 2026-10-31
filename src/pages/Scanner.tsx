@@ -17,7 +17,13 @@ import {
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useApp } from '../context/AppContext';
-import { extractPrescriptionWithGemini } from '../services/gemini';
+import {
+  extractPrescriptionWithGemini,
+  getLocalReaderStatus,
+  getReaderStatus,
+  setStoredGeminiApiKey,
+  type ReaderStatus,
+} from '../services/gemini';
 import type { Prescription } from '../types';
 import './Scanner.css';
 
@@ -42,6 +48,10 @@ export function Scanner() {
   const [imageFileName, setImageFileName] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [readerStatus, setReaderStatus] = useState<ReaderStatus>(() => getLocalReaderStatus());
+  const [showReaderSetup, setShowReaderSetup] = useState(false);
+  const [readerKeyDraft, setReaderKeyDraft] = useState('');
+  const [readerKeyError, setReaderKeyError] = useState<string | null>(null);
 
   // Live Camera state
   const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
@@ -75,6 +85,17 @@ export function Scanner() {
       stopCamera();
     };
   }, [stopCamera]);
+
+  // Check whether the server-side reader has a key configured.
+  useEffect(() => {
+    let active = true;
+    getReaderStatus().then(status => {
+      if (active) setReaderStatus(status);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // ─── Start Live Camera ──────────────────────────────────────────────────────
   const startLiveCamera = async (facing: 'environment' | 'user' = cameraFacingMode) => {
@@ -330,6 +351,27 @@ export function Scanner() {
     setIsDemoMode(false);
   };
 
+  const handleSaveReaderKey = () => {
+    const key = readerKeyDraft.trim();
+    if (key.length < 20) {
+      setReaderKeyError('That key looks too short. Paste the full Gemini API key.');
+      return;
+    }
+    setStoredGeminiApiKey(key);
+    setReaderKeyDraft('');
+    setReaderKeyError(null);
+    setShowReaderSetup(false);
+    setReaderStatus({ live: true, source: 'local' });
+  };
+
+  const handleRemoveReaderKey = () => {
+    setStoredGeminiApiKey(null);
+    setReaderKeyDraft('');
+    setReaderKeyError(null);
+    setReaderStatus(getLocalReaderStatus());
+    getReaderStatus().then(setReaderStatus);
+  };
+
   return (
     <main className="page-content scanner-page">
       <div className="container">
@@ -498,7 +540,8 @@ export function Scanner() {
                 <div className="demo-banner" role="note">
                   <Info size={16} aria-hidden="true" />
                   <span>
-                    <strong>Demo Mode:</strong> No Gemini API key provided. Using synthetic prescription data for caregiver preview.
+                    <strong>Sample result:</strong> these medicines were not read from your
+                    photo. Verify every field against the original prescription before continuing.
                   </span>
                 </div>
               )}
@@ -509,6 +552,17 @@ export function Scanner() {
                     <Check size={18} style={{ color: 'var(--color-success)' }} aria-hidden="true" />
                     <span>Photo captured: <strong>{imageFileName}</strong></span>
                   </div>
+
+                  {!readerStatus.live && (
+                    <div className="demo-banner" role="note">
+                      <Info size={16} aria-hidden="true" />
+                      <span>
+                        <strong>Reader not connected:</strong> this photo will not be read.
+                        Add a Gemini API key from the scan screen, or verify every field against
+                        the original prescription.
+                      </span>
+                    </div>
+                  )}
 
                   <div className="review-btns-group">
                     <button
@@ -530,7 +584,7 @@ export function Scanner() {
                       aria-label="Confirm prescription photo and read with AI"
                     >
                       <CheckCircle size={20} aria-hidden="true" />
-                      <span>Confirm & Read with Gemini AI</span>
+                      <span>{readerStatus.live ? 'Confirm & Read with Gemini AI' : 'Confirm & Use Sample List'}</span>
                     </button>
                   </div>
                 </div>
@@ -541,7 +595,106 @@ export function Scanner() {
           {/* ─── 3. IDLE / INITIAL SCANNER SELECTION ─── */}
           {(scanState === 'idle' || scanState === 'error') && (
             <div className="scanner-choice-layout animate-fade-in">
-              
+
+              {/* ─── Reader connection ─── */}
+              <section
+                className={`reader-card card ${readerStatus.live ? 'reader-card--live' : ''}`}
+                aria-label="Prescription reader status"
+              >
+                <div className="reader-card-head">
+                  <div
+                    className={`reader-card-icon ${readerStatus.live ? 'reader-card-icon--live' : ''}`}
+                    aria-hidden="true"
+                  >
+                    {readerStatus.live ? <ShieldCheck size={24} /> : <Info size={24} />}
+                  </div>
+                  <div className="reader-card-copy">
+                    <h2>
+                      {readerStatus.live
+                        ? 'Prescription reader connected'
+                        : 'Connect the prescription reader'}
+                    </h2>
+                    <p>
+                      {readerStatus.live
+                        ? `Photos will be read with Gemini${readerStatus.source === 'server' ? ' on the server' : ''}. Always compare every field with the original prescription.`
+                        : 'Add a Gemini API key to read your own prescriptions. Until then, scans show a sample medicine list so you can explore the workflow.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="reader-card-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setShowReaderSetup(open => !open)}
+                  >
+                    {readerStatus.live ? 'Change reader key' : 'Add Gemini API key'}
+                  </button>
+                  {readerStatus.live && readerStatus.source === 'local' && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={handleRemoveReaderKey}
+                    >
+                      Remove key
+                    </button>
+                  )}
+                </div>
+
+                {showReaderSetup && (
+                  <div className="reader-key-form">
+                    <label htmlFor="gemini-key-input">Gemini API key</label>
+                    <input
+                      id="gemini-key-input"
+                      type="password"
+                      value={readerKeyDraft}
+                      onChange={event => {
+                        setReaderKeyDraft(event.target.value);
+                        setReaderKeyError(null);
+                      }}
+                      placeholder="AIza..."
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    {readerKeyError && (
+                      <p className="reader-key-error" role="alert">{readerKeyError}</p>
+                    )}
+                    <div className="reader-key-actions">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleSaveReaderKey}
+                      >
+                        Save key
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => {
+                          setShowReaderSetup(false);
+                          setReaderKeyDraft('');
+                          setReaderKeyError(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    <p className="reader-key-note">
+                      The key stays in this browser and is sent only to Google Gemini.
+                      Create one at{' '}
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Google AI Studio
+                      </a>
+                      . Remove it when using a shared device.
+                    </p>
+                  </div>
+                )}
+              </section>
+
               {/* Primary Live Camera Action */}
               <div className="camera-prompt-card card">
                 <div className="prompt-icon-box" aria-hidden="true">
@@ -616,9 +769,9 @@ export function Scanner() {
                   type="button"
                   className="btn btn-ghost sample-btn-friendly"
                   onClick={handleLoadSample}
-                  aria-label="Try sample synthetic prescription"
+                  aria-label="Try a sample prescription"
                 >
-                  ✨ Try Sample Synthetic Prescription (Demo)
+                  ✨ Try a Sample Prescription
                 </button>
               </div>
 

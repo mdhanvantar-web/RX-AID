@@ -94,13 +94,6 @@ export function Login() {
             </div>
           </div>
 
-          {/* Demo Mode Notice */}
-          <div className="demo-banner" style={{ marginTop: 'var(--space-6)' }} role="note">
-            <Info size={16} aria-hidden="true" />
-            <span>
-              <strong>Demo Access Mode:</strong> You can sign in directly or use the one-click demo access to explore the caregiver dashboard immediately.
-            </span>
-          </div>
         </section>
 
         {/* Login / Register Form */}
@@ -210,7 +203,8 @@ export function Login() {
               <div className="forgot-notice-banner animate-fade-in" role="status">
                 <Info size={16} aria-hidden="true" />
                 <span>
-                  Demo Mode: You can sign in using any password or click Quick Demo Access below.
+                  Any password of six or more characters works in this prototype. You can also
+                  continue as a family caregiver below.
                 </span>
               </div>
             )}
@@ -237,7 +231,7 @@ export function Login() {
           </form>
 
           <div className="auth-divider">
-            <span>or use instant demo</span>
+            <span>or continue instantly</span>
           </div>
 
           <button
@@ -247,7 +241,7 @@ export function Login() {
             onClick={handleQuickDemoLogin}
           >
             <UserCheck size={20} className="demo-icon" aria-hidden="true" />
-            <span>Quick Demo Access (Family Caregiver)</span>
+            <span>Continue as Family Caregiver</span>
           </button>
 
           <div className="trust-footer">

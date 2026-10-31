@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { PHARMACY_STORES, getProductsForStore } from '../services/pharmacyData';
+import { SAMPLE_MEDICATIONS } from '../services/demoData';
 import {
   findUnresolvedFlag,
   getUnresolvedMedicineFlags,
@@ -44,48 +45,8 @@ export function Pharmacies() {
     }
   }
 
-  // Fallback demo meds if no prescription has been verified yet
-  const effectiveMeds: MedicationEntry[] = verifiedMeds.length > 0 ? verifiedMeds : [
-    {
-      id: 'demo-med-1',
-      medicineName: 'Metformin',
-      strength: '500mg',
-      dose: '1 tablet',
-      frequency: 'Twice daily',
-      timings: ['morning', 'evening'],
-      foodInstruction: 'After food',
-      duration: '30 days',
-      notes: null,
-      unclear: false,
-      unclearFields: [],
-    },
-    {
-      id: 'demo-med-2',
-      medicineName: 'Amlodipine',
-      strength: '5mg',
-      dose: '1 tablet',
-      frequency: 'Once daily',
-      timings: ['morning'],
-      foodInstruction: 'Before food',
-      duration: '30 days',
-      notes: null,
-      unclear: false,
-      unclearFields: [],
-    },
-    {
-      id: 'demo-med-3',
-      medicineName: 'Atorvastatin',
-      strength: '10mg',
-      dose: '1 tablet',
-      frequency: 'Once daily',
-      timings: ['night'],
-      foodInstruction: null,
-      duration: '30 days',
-      notes: null,
-      unclear: false,
-      unclearFields: [],
-    },
-  ];
+  // Sample medicines are shown until a prescription has been verified.
+  const effectiveMeds: MedicationEntry[] = verifiedMeds.length > 0 ? verifiedMeds : SAMPLE_MEDICATIONS;
 
   const filteredStores = PHARMACY_STORES.filter(store =>
     store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

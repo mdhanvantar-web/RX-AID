@@ -12,7 +12,7 @@
 
 **https://rx-aid.vercel.app**
 
-The hosted build currently runs in **synthetic demo mode** because no Gemini API key is configured. Add `VITE_GEMINI_API_KEY` in the Vercel project settings to enable live extraction.
+The hosted build shows a sample medicine list until a Gemini reader key is configured. Add `GEMINI_API_KEY` in the Vercel project settings for server-side extraction, or paste a key into the reader card on `/scan` (stored only in that browser).
 
 ---
 
@@ -33,20 +33,20 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 | Warm light theme and elderly-friendly interface | ✅ Implemented |
 | Caregiver dashboard, patient summary, adherence stats | ✅ Implemented |
 | Prescription upload, drag-and-drop, live camera, native camera | ✅ Implemented |
-| Gemini multimodal extraction with unreadable-field handling | ✅ Implemented (live with API key, synthetic demo without one) |
+| Gemini multimodal extraction with unreadable-field handling | ✅ Implemented (server proxy or browser key; sample list without a key) |
 | Human verification screen and safety lock | ✅ Implemented |
 | Prescription history, versioning, and cautious change detection | ✅ Implemented |
 | Prescription comparison screen and caregiver review notices | ✅ Implemented |
 | 7-day medication schedule and dose tracking | ✅ Implemented |
 | Pharmacy store selection and search | ✅ Demo implementation |
-| Multi-store price comparison | ✅ Demo implementation (3 catalog medicines) |
+| Multi-store price comparison | ✅ Demo implementation (15 catalog medicines) |
 | Cart, delivery/pickup choice, order review, order history | ✅ Demo implementation (no real payment or fulfilment) |
 | English + Telugu interface | ✅ Implemented |
 | 35-locale translation registry | ⚠️ Scaffolded in `src/i18n/`, not connected to the UI |
 | Real accounts and authentication | ❌ Demo only |
 | Backend, database, real pharmacy APIs, payments | ❌ Not implemented |
 | Push reminders / alarms | ❌ Not implemented |
-| Synthetic comparison-engine tests and headless UI smoke tests | ✅ Implemented (`npm run test:comparison`, `npm run test:ui`) |
+| Synthetic comparison-engine, extraction, UI, and full-audit tests | ✅ Implemented (`npm run test:comparison`, `npm run test:extraction`, `npm run test:ui`, `npm run test:audit`) |
 | CI pipeline | ❌ Not implemented |
 
 **Build check:** `npm run build` (TypeScript project build + Vite production build) succeeds. `npm run lint` completes with warnings only; there are no lint errors.
@@ -75,18 +75,22 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 - Native mobile camera fallback (`capture="environment"`).
 - Gallery/file upload and drag-and-drop.
 - JPEG, PNG, and WebP validation with a 10MB size limit.
-- One-click **synthetic sample prescription** for privacy-safe demos.
+- One-click **sample prescription** for privacy-safe walkthroughs.
 - Clear privacy notice: the camera is only opened on a direct tap and tracks stop after capture.
 - Friendly error states for denied permission, missing hardware, busy camera, insecure origin, and unsupported browsers.
 
 ### 4. Gemini prescription extraction
-- Optional live extraction through the official `@google/genai` SDK using `gemini-2.0-flash`.
-- Strict transcription prompt: extract only visible text, never guess, and flag ambiguous fields.
-- Understands common Indian prescription shorthand such as BD, TDS/TID, OD, hs, ac, pc, and SOS.
-- Returns structured medication entries (name, strength, dose, frequency, timings, food instruction, duration) plus warnings and a confidence level.
+- Live extraction through the official `@google/genai` SDK using `gemini-2.5-flash` (with automatic fallback to `gemini-2.0-flash`).
+- **Server-side proxy** at `api/extract.js`: set `GEMINI_API_KEY` in Vercel and the key never reaches the browser.
+- **Local key option**: the reader card on `/scan` accepts a personal Gemini key, stored only in that browser, for immediate testing without redeploying.
+- Strict transcription prompt: extract only visible text, never guess, separate name/strength/dose, and flag ambiguous fields.
+- Understands common Indian prescription shorthand such as BD, TDS/TID, OD, hs, ac, pc, SOS, and slot notation like 1-0-1.
+- Structured JSON response with a schema, temperature 0, medicine entries (name, strength, dose, frequency, timings, food instruction, duration, route, notes), warnings, and a confidence level.
+- Downscales large photos in the browser before upload and validates every field on return; malformed fields become `null` rather than guessed.
 - Marks unreadable medicines as `[Unreadable]` and records the affected fields.
-- **Synthetic demo mode** when no API key is configured, so the full workflow can be explored safely.
-- Graceful error handling if the API request or JSON parsing fails.
+- **Sample medicine list** when no key is configured, so the full workflow can still be explored.
+- Clear "Sample result" warnings on the scanner and verification screen when extraction did not read the uploaded photo.
+- Graceful error handling for rejected keys, quota limits, unreadable images, network failures, and unexpected JSON.
 
 ### 5. Human verification (`/verify/:id`)
 - Side-by-side original prescription image and extracted fields.
@@ -115,7 +119,7 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 ### 8. Price comparison (`/compare`)
 - Compares the total payable amount for each verified medicine across the five demo stores.
 - Highlights the lowest total and supports adding any offer directly to the cart.
-- Exact catalog pricing currently covers Metformin 500mg, Amlodipine 5mg, and Atorvastatin 10mg; other verified medicines use an illustrative fallback price.
+- Exact catalog pricing covers 15 common medicines across Metformin, Amlodipine, Atorvastatin, Telmisartan, Pantoprazole, Levothyroxine, Paracetamol, Cetirizine, Losartan, Metoprolol, Amoxicillin, Azithromycin, Montelukast, Glimepiride, and Vitamin D3; other verified medicines use an illustrative fallback price.
 
 ### 9. Profile and language preference (`/profile`)
 - Edit caregiver name, phone, and default delivery address.
@@ -246,7 +250,7 @@ npm install
 
 ### 2. Configure the optional Gemini key
 
-Copy the safe template and add a key only if you want live AI extraction:
+Copy the safe template:
 
 ```bash
 # macOS / Linux
@@ -256,13 +260,22 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
+Add a server-side key for the Vercel function (recommended):
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+`npm run dev` serves only the Vite frontend, so locally you can either use `vercel dev` (to run `/api/extract`) or add a browser-only fallback key:
+
 ```env
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-If the key is blank or set to `DEMO`, RX-AID runs in synthetic demo mode. The complete workflow still works with fictional extracted medicines.
+You can also leave both blank and paste a key into the **reader card on `/scan`**; it is stored only in that browser. With no key, the scanner shows a clearly labelled sample medicine list so the workflow still works.
 
-> ⚠️ **Never commit `.env` or a real API key.** Vite embeds `VITE_*` values into the browser bundle, so this approach is suitable only for local demos. Use a backend proxy for any public deployment.
+> ⚠️ **Never commit `.env` or a real API key.** Vite embeds `VITE_*` values into the browser bundle, so prefer `GEMINI_API_KEY` and the serverless proxy for any public deployment.
 
 ### 3. Start the development server
 
@@ -320,7 +333,7 @@ The repository includes `vercel.json` (Vite build, `dist` output, and SPA deep-l
 vercel --prod
 ```
 
-Add `VITE_GEMINI_API_KEY` in **Project Settings → Environment Variables** to enable live AI extraction. Without it, the deployment runs safely in synthetic demo mode.
+Add `GEMINI_API_KEY` in **Project Settings → Environment Variables** to enable server-side extraction; the key stays on the server. Optionally set `GEMINI_MODEL` (default `gemini-2.5-flash`). Without a key, the deployment shows the labelled sample medicine list.
 
 ---
 

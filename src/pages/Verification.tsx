@@ -159,7 +159,19 @@ export function Verification() {
           </p>
         </div>
 
-        {/* ─── Demo Mode Banner ─── */}
+        {/* ─── Sample result warning ─── */}
+        {prescription.extracted?.source === 'demo' && (
+          <div className="demo-banner animate-fade-in" role="alert">
+            <AlertTriangle size={16} aria-hidden="true" />
+            <span>
+              <strong>Sample result:</strong> this draft was not read from your photo. Add a
+              Gemini API key on the scan screen and re-scan, or correct every field manually
+              before verifying.
+            </span>
+          </div>
+        )}
+
+        {/* ─── Extraction confidence ─── */}
         {prescription.extracted && (
           <div className="demo-banner animate-fade-in" role="note">
             <Info size={14} aria-hidden="true" />

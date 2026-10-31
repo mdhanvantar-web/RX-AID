@@ -27,6 +27,7 @@ export interface ExtractedPrescription {
   rawText: string | null;
   extractionWarnings: string[];
   confidence: 'high' | 'medium' | 'low' | 'unclear';
+  source?: 'gemini' | 'demo' | 'manual';
 }
 
 export interface Prescription {
