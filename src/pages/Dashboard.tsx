@@ -5,7 +5,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Clock,
-  TrendingUp,
   ChevronRight,
   Pill,
   User,
@@ -15,7 +14,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { getTodayDoses, getTimingTime, getAdherenceRate, formatPrescriptionDate } from '../utils/scheduleUtils';
+import { getTodayDoses, getTimingTime, formatPrescriptionDate } from '../utils/scheduleUtils';
 import { getLatestComparison } from '../services/prescriptionComparison';
 import { TRANSLATIONS, getTimingLabelFriendly } from '../utils/translations';
 import type { MedicationTiming } from '../types';
@@ -30,7 +29,6 @@ export function Dashboard() {
   const t = TRANSLATIONS[language];
 
   const todayDoses = getTodayDoses(doses);
-  const adherenceRate = getAdherenceRate(doses);
   const activePrescription = prescriptions.find(p => p.status === 'active') || prescriptions[0] || null;
 
   const latestComparison = getLatestComparison(comparisons);
@@ -100,25 +98,6 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Adherence Ring with Clear Contrast */}
-          <div className="adherence-ring-box" role="img" aria-label={`Medication adherence: ${adherenceRate}%`}>
-            <svg viewBox="0 0 44 44" className="ring-svg" aria-hidden="true">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-              <circle
-                cx="22" cy="22" r="18" fill="none"
-                stroke="var(--color-primary)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeDasharray={`${(adherenceRate / 100) * 113.1} 113.1`}
-                strokeDashoffset="28.27"
-                style={{ transition: 'stroke-dasharray 1s ease' }}
-              />
-            </svg>
-            <div className="ring-content">
-              <span className="ring-pct">{adherenceRate}%</span>
-              <span className="ring-sub">adherence</span>
-            </div>
-          </div>
         </section>
 
         {/* ─── Prescription Change Notifications ─── */}
@@ -256,10 +235,10 @@ export function Dashboard() {
 
           <div className="stat-card card">
             <div className="stat-icon-wrap stat-icon--primary" aria-hidden="true">
-              <TrendingUp size={22} />
+              <Clock size={22} />
             </div>
-            <div className="stat-value">{adherenceRate}%</div>
-            <div className="stat-label">7-Day Adherence</div>
+            <div className="stat-value">{totalToday}</div>
+            <div className="stat-label">Scheduled Today</div>
           </div>
 
           <div className="stat-card card">

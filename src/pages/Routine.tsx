@@ -11,14 +11,12 @@ import {
   Pill,
   Shield,
   Activity,
-  Award,
   ShoppingCart,
   Scale,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import {
   getTimingTime,
-  getAdherenceRate,
 } from '../utils/scheduleUtils';
 import { getTimingLabelFriendly } from '../utils/translations';
 import type { MedicationTiming, DoseRecord, DoseStatus } from '../types';
@@ -41,11 +39,11 @@ export function Routine() {
     return doses.filter(d => d.scheduledDate === formattedDate);
   }, [doses, formattedDate]);
 
-  // Adherence calculation
-  const overallAdherence = getAdherenceRate(doses);
+  // Dose counts for the selected day
   const takenCount = dayDoses.filter(d => d.status === 'taken').length;
   const missedCount = dayDoses.filter(d => d.status === 'missed').length;
   const totalCount = dayDoses.length;
+  const remainingCount = Math.max(totalCount - takenCount - missedCount, 0);
   const dayAdherencePct = totalCount > 0 ? Math.round((takenCount / totalCount) * 100) : 0;
 
   // Active verified medications
@@ -166,12 +164,10 @@ export function Routine() {
           </div>
           <div className="stat-card card">
             <div className="stat-icon-wrap stat-icon--primary" aria-hidden="true">
-              <Award size={20} />
+              <Clock size={20} />
             </div>
-            <div className="stat-value" style={{ color: 'var(--color-primary-dark)' }}>
-              {overallAdherence}%
-            </div>
-            <div className="stat-label">Overall Adherence</div>
+            <div className="stat-value">{remainingCount}</div>
+            <div className="stat-label">Remaining Today</div>
           </div>
         </section>
 
