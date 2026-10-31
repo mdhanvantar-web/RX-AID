@@ -110,7 +110,7 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 - Cart supports quantity changes, removal, clearing, home delivery vs pickup, address/phone entry, delivery-fee thresholds, and an order review modal.
 - Placing an order creates a local demo order and clears the cart.
 - Order history shows pharmacy, items, quantities, totals, delivery destination, and status.
-- Every pharmacy screen carries a prominent **synthetic demo data** notice.
+- Store names, prices, stock, and delivery estimates remain illustrative demo data.
 
 ### 8. Price comparison (`/compare`)
 - Compares the total payable amount for each verified medicine across the five demo stores.

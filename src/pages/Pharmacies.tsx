@@ -136,14 +136,6 @@ export function Pharmacies() {
           </button>
         </header>
 
-        {/* Synthetic Demo Label Banner */}
-        <div className="demo-banner animate-fade-in" role="note">
-          <ShieldAlert size={18} aria-hidden="true" />
-          <span>
-            <strong>DEMO DATA:</strong> Displayed pharmacy stores, sample stock, and delivery estimates are synthetic demonstration models for Tier-2 caregiver workflows. No real transactions or real pharmacy dispatches occur.
-          </span>
-        </div>
-
         {/* Store Search */}
         <div className="search-bar-wrap animate-fade-in">
           <Search size={18} className="search-icon" aria-hidden="true" />
