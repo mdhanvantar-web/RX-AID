@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "test:comparison": "node --experimental-strip-types tests/prescriptionComparison.test.mjs",
     "test:ui": "node tests/ui-smoke.mjs",
+    "test:audit": "node tests/full-audit.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -127,6 +127,22 @@ const CATALOG_ITEMS: MedCatalogItem[] = [
   },
 ];
 
+/**
+ * Catalog prices are for one specific strength. Only use a catalog offer when
+ * the verified prescription states the same strength; otherwise fall back to
+ * the prescribed medicine details. This prevents the UI from implying that a
+ * different strength is the prescribed product.
+ */
+function findCatalogMatch(med: MedicationEntry): MedCatalogItem | undefined {
+  const prescribedStrength = (med.strength ?? '').toLowerCase().replace(/\s+/g, '');
+  if (!prescribedStrength) return undefined;
+  return CATALOG_ITEMS.find(
+    item =>
+      med.medicineName.toLowerCase().includes(item.baseName.toLowerCase()) &&
+      item.strength.toLowerCase().replace(/\s+/g, '') === prescribedStrength
+  );
+}
+
 export function getProductsForStore(pharmacyId: string, verifiedMeds: MedicationEntry[]): PharmacyProduct[] {
   const store = PHARMACY_STORES.find(s => s.id === pharmacyId) || PHARMACY_STORES[0];
   const products: PharmacyProduct[] = [];
@@ -134,15 +150,13 @@ export function getProductsForStore(pharmacyId: string, verifiedMeds: Medication
   for (const med of verifiedMeds) {
     if (med.unclear) continue; // safety rule: never sell unclear items
 
-    const match = CATALOG_ITEMS.find(item =>
-      med.medicineName.toLowerCase().includes(item.baseName.toLowerCase())
-    );
+    const match = findCatalogMatch(med);
 
     if (match) {
       const price = match.storePrices[store.id] ?? 35.00;
       const deliveryFee = store.deliveryFee;
       products.push({
-        id: `prod-${store.id}-${match.baseName.toLowerCase()}`,
+        id: `prod-${store.id}-${med.id}`,
         pharmacyId: store.id,
         pharmacyName: store.name,
         medicineName: `${match.baseName} (${match.manufacturer})`,
@@ -196,9 +210,7 @@ export function getAllPriceComparisons(verifiedMeds: MedicationEntry[]): Array<{
     const offers: PharmacyProduct[] = [];
 
     for (const store of PHARMACY_STORES) {
-      const match = CATALOG_ITEMS.find(item =>
-        med.medicineName.toLowerCase().includes(item.baseName.toLowerCase())
-      );
+      const match = findCatalogMatch(med);
 
       const price = match ? (match.storePrices[store.id] ?? 35.00) : 40.00;
       const deliveryFee = store.deliveryFee;
