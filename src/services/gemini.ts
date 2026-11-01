@@ -9,7 +9,7 @@ const STORAGE_KEY = 'rxaid_gemini_api_key';
 const DEFAULT_MODEL = 'gemini-2.5-flash';
 const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 const MAX_IMAGE_SIDE = 2000;
-const MAX_IMAGE_BYTES = 2_500_000;
+
 
 // ─── Sample extraction (used when no reader key is configured) ─────────────
 const SAMPLE_EXTRACTION: ExtractedPrescription = {
@@ -168,23 +168,32 @@ async function prepareImage(dataUrl: string): Promise<string> {
   if (typeof document === 'undefined') return dataUrl;
 
   const image = await loadImage(dataUrl);
-  const longestSide = Math.max(image.naturalWidth, image.naturalHeight);
-  const scale = longestSide > MAX_IMAGE_SIDE ? MAX_IMAGE_SIDE / longestSide : 1;
-
-  if (scale === 1 && dataUrl.length <= MAX_IMAGE_BYTES) return dataUrl;
-
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
   const context = canvas.getContext('2d');
   if (!context) return dataUrl;
 
-  // Transparent PNGs become black in JPEG, so paint a white page first.
-  context.fillStyle = '#ffffff';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  let scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(image.naturalWidth, image.naturalHeight));
+  let best = dataUrl;
 
-  return canvas.toDataURL('image/jpeg', 0.9);
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of [0.9, 0.82, 0.74, 0.66, 0.58]) {
+      const result = canvas.toDataURL('image/jpeg', quality);
+      if (result.length <= 1050000) return result;
+      if (result.length < best.length) best = result;
+    }
+
+    scale *= 0.78;
+    if (scale < 0.25) break;
+  }
+
+  return best;
 }
 
 function splitDataUrl(dataUrl: string): { mimeType: string; base64: string } {
@@ -205,6 +214,10 @@ export async function extractPrescriptionWithGemini(
     if (proxied) return proxied;
   }
 
+  return sampleResult();
+}
+
+export async function extractSamplePrescription(): Promise<GeminiExtractionResult> {
   return sampleResult();
 }
 

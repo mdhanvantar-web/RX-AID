@@ -18,13 +18,16 @@ import './Profile.css';
 
 export function Profile() {
   const navigate = useNavigate();
-  const { state, updateUser, setLanguage, logout } = useApp();
+  const { state, patients, activePatientId, switchPatient, addPatient, removePatient, updateUser, setLanguage, logout } = useApp();
   const { user, patient, language, prescriptions, orders } = state;
 
   const [userName, setUserName] = useState(user.name);
   const [userPhone, setUserPhone] = useState(user.phone);
   const [deliveryAddress, setDeliveryAddress] = useState(user.deliveryAddress);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [newPatientName, setNewPatientName] = useState('');
+  const [newPatientAge, setNewPatientAge] = useState('60');
+  const [newPatientRelationship, setNewPatientRelationship] = useState('Parent');
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +76,86 @@ export function Profile() {
             <span>Your caregiver profile and delivery preferences have been updated!</span>
           </div>
         )}
+
+        
+        <section className="card profile-form-card" aria-labelledby="patients-heading" style={{ marginBottom: 'var(--space-6)' }}>
+          <h2 id="patients-heading">Family members / patients</h2>
+          <p className="profile-subtitle">Switch between the people you care for. Each person keeps their own prescriptions, routine, cart, and orders.</p>
+
+          <div className="form-field" style={{ marginTop: 'var(--space-4)' }}>
+            <label htmlFor="active-patient">Active patient</label>
+            <select
+              id="active-patient"
+              className="input"
+              value={activePatientId}
+              onChange={e => switchPatient(e.target.value)}
+            >
+              {patients.map(p => (
+                <option key={p.id} value={p.id}>{p.name} ({p.relationship})</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-row" style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <input
+              className="input"
+              placeholder="New patient name"
+              value={newPatientName}
+              onChange={e => setNewPatientName(e.target.value)}
+              aria-label="New patient name"
+            />
+            <input
+              className="input"
+              type="number"
+              min="0"
+              max="120"
+              placeholder="Age"
+              value={newPatientAge}
+              onChange={e => setNewPatientAge(e.target.value)}
+              aria-label="New patient age"
+              style={{ maxWidth: '90px' }}
+            />
+            <input
+              className="input"
+              placeholder="Relationship"
+              value={newPatientRelationship}
+              onChange={e => setNewPatientRelationship(e.target.value)}
+              aria-label="Relationship"
+              style={{ maxWidth: '160px' }}
+            />
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                if (!newPatientName.trim()) return;
+                const patient = {
+                  id: `patient-${Date.now()}`,
+                  name: newPatientName.trim(),
+                  age: Number(newPatientAge) || 0,
+                  relationship: newPatientRelationship.trim() || 'Family member',
+                  conditions: [],
+                };
+                addPatient(patient);
+                setNewPatientName('');
+              }}
+            >
+              Add patient
+            </button>
+          </div>
+
+          {patients.length > 1 && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              style={{ marginTop: 'var(--space-3)' }}
+              onClick={() => {
+                if (confirm('Remove this patient and their data?')) removePatient(activePatientId);
+              }}
+            >
+              Remove active patient
+            </button>
+          )}
+        </section>
 
         <div className="profile-grid">
           

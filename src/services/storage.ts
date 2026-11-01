@@ -10,8 +10,42 @@ import type {
 } from '../types';
 
 const STORAGE_KEY = 'rxaid_app_state_v2';
+const PATIENT_REGISTRY_KEY = 'rxaid_patients_v1';
+let currentPatientId: string | null = null;
 
-const DEFAULT_PATIENT: Patient = {
+export function getCurrentPatientId() {
+  return currentPatientId;
+}
+
+export function setCurrentPatientId(id: string | null) {
+  currentPatientId = id;
+}
+
+function stateStorageKey() {
+  return currentPatientId ? `${STORAGE_KEY}_${currentPatientId}` : STORAGE_KEY;
+}
+
+export function loadPatientRegistry(): { patients: Patient[]; activePatientId: string } | null {
+  try {
+    const raw = localStorage.getItem(PATIENT_REGISTRY_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.patients)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function savePatientRegistry(registry: { patients: Patient[]; activePatientId: string }) {
+  try {
+    localStorage.setItem(PATIENT_REGISTRY_KEY, JSON.stringify(registry));
+  } catch {
+    console.error('[RX-AID] Failed to persist patient registry');
+  }
+}
+
+export const DEFAULT_PATIENT: Patient = {
   id: 'patient-001',
   name: 'Ramaiah Naidu',
   age: 68,
@@ -48,8 +82,20 @@ const DEFAULT_STATE: AppState = {
 
 export function loadState(): AppState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_STATE;
+    const registry = loadPatientRegistry();
+    if (registry) {
+      setCurrentPatientId(registry.activePatientId);
+    } else {
+      setCurrentPatientId(null);
+    }
+    const raw = localStorage.getItem(stateStorageKey());
+    if (!raw) {
+      if (registry) {
+        const active = registry.patients.find((p: Patient) => p.id === registry.activePatientId) || registry.patients[0] || DEFAULT_PATIENT;
+        return { ...DEFAULT_STATE, patient: active };
+      }
+      return DEFAULT_STATE;
+    }
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return {
       ...DEFAULT_STATE,
@@ -71,7 +117,7 @@ export function loadState(): AppState {
 
 export function saveState(state: AppState): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(stateStorageKey(), JSON.stringify(state));
   } catch {
     console.error('[RX-AID] Failed to persist state to localStorage');
   }

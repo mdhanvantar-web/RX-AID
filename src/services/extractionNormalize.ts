@@ -109,23 +109,39 @@ export function normalizeExtraction(
     const med = asRecord(item);
     const rawName = asText(med.medicineName) ?? asText(med.name);
     const nameUnreadable = !rawName || /^\[?unreadable\]?$/i.test(rawName);
-    const unclearFields = asFields(med.unclearFields);
-    if (nameUnreadable && !unclearFields.includes('medicineName')) {
-      unclearFields.unshift('medicineName');
+    const unclearFieldSet = new Set(asFields(med.unclearFields));
+    if (nameUnreadable) unclearFieldSet.add('medicineName');
+
+    const strength = asText(med.strength);
+    const dose = asText(med.dose);
+    const frequency = asText(med.frequency);
+    if (!strength) unclearFieldSet.add('strength');
+    if (!dose) unclearFieldSet.add('dose');
+    if (!frequency) unclearFieldSet.add('frequency');
+
+    const timings = asTimings(med.timings);
+    if (frequency && timings.length === 0 && !/sos|prn|as needed/i.test(frequency)) {
+      unclearFieldSet.add('timings');
     }
+
+    const unclearFields = [...unclearFieldSet];
+    const unclear =
+      nameUnreadable ||
+      med.unclear === true ||
+      unclearFields.length > 0;
 
     return {
       id: `med-${index + 1}`,
       medicineName: nameUnreadable ? '[Unreadable]' : (rawName as string),
-      strength: asText(med.strength),
-      dose: asText(med.dose),
-      frequency: asText(med.frequency),
-      timings: asTimings(med.timings),
+      strength,
+      dose,
+      frequency,
+      timings,
       foodInstruction: asText(med.foodInstruction),
       duration: asText(med.duration),
       route: asText(med.route),
       notes: asText(med.notes),
-      unclear: nameUnreadable || med.unclear === true || unclearFields.length > 0,
+      unclear,
       unclearFields,
     };
   });

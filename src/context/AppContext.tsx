@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useState } from 'react';
 import type {
   AppState,
   Prescription,
@@ -10,6 +10,7 @@ import type {
   AppLanguage,
   UserProfile,
   PrescriptionComparisonRecord,
+  Patient,
 } from '../types';
 import {
   loadState,
@@ -24,9 +25,13 @@ import {
   addOrder as persistAddOrder,
   saveComparison as persistComparison,
   markComparisonReviewed as persistComparisonReviewed,
+  loadPatientRegistry,
+  savePatientRegistry,
+  setCurrentPatientId,
+  DEFAULT_PATIENT,
 } from '../services/storage';
 
-// ─── Actions ───────────────────────────────────────────────────────────────
+// ─── Actions ────────────────────────────────────────────────────────────────
 type Action =
   | { type: 'SET_STATE'; payload: AppState }
   | { type: 'UPSERT_PRESCRIPTION'; payload: Prescription }
@@ -126,9 +131,15 @@ function reducer(state: AppState, action: Action): AppState {
   }
 }
 
-// ─── Context ───────────────────────────────────────────────────────────────
+// ─── Context ────────────────────────────────────────────────────────────────
 interface AppContextValue {
   state: AppState;
+  patients: Patient[];
+  activePatientId: string;
+  switchPatient: (id: string) => void;
+  addPatient: (patient: Patient) => void;
+  updatePatient: (patient: Patient) => void;
+  removePatient: (id: string) => void;
   upsertPrescription: (p: Prescription) => void;
   setActivePrescription: (id: string | null) => void;
   markDose: (doseId: string, status: DoseStatus) => void;
@@ -151,6 +162,14 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, loadState);
+
+  const initialRegistry = loadPatientRegistry();
+  const [patients, setPatients] = useState<Patient[]>(
+    initialRegistry?.patients ?? [state.patient ?? DEFAULT_PATIENT]
+  );
+  const [activePatientId, setActivePatientId] = useState<string>(
+    initialRegistry?.activePatientId ?? (state.patient?.id ?? DEFAULT_PATIENT.id)
+  );
 
   const upsertPrescription = useCallback((p: Prescription) => {
     dispatch({ type: 'UPSERT_PRESCRIPTION', payload: p });
@@ -221,12 +240,69 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'LOGOUT' });
   }, []);
 
+  const switchPatient = useCallback((id: string) => {
+    const target = patients.find(p => p.id === id);
+    if (!target) return;
+    saveState(state);
+    setCurrentPatientId(id);
+    const loaded = loadState();
+    const next = { ...loaded, patient: target };
+    dispatch({ type: 'SET_STATE', payload: next });
+    setActivePatientId(id);
+  }, [patients, state]);
+
+  const addPatient = useCallback((patient: Patient) => {
+    const registry = loadPatientRegistry() || { patients: [...patients], activePatientId };
+    const updatedPatients = [...registry.patients, patient];
+    const updatedRegistry = { patients: updatedPatients, activePatientId: patient.id };
+    savePatientRegistry(updatedRegistry);
+    setPatients(updatedPatients);
+    saveState(state);
+    setCurrentPatientId(patient.id);
+    const loaded = loadState();
+    const next = { ...loaded, patient };
+    dispatch({ type: 'SET_STATE', payload: next });
+    setActivePatientId(patient.id);
+  }, [patients, activePatientId, state]);
+
+  const updatePatient = useCallback((patient: Patient) => {
+    const registry = loadPatientRegistry();
+    if (registry) {
+      const updatedPatients = registry.patients.map(p => (p.id === patient.id ? patient : p));
+      savePatientRegistry({ ...registry, patients: updatedPatients });
+      setPatients(updatedPatients);
+    }
+    if (patient.id === activePatientId) {
+      const next = { ...state, patient };
+      dispatch({ type: 'SET_STATE', payload: next });
+      saveState(next);
+    }
+  }, [activePatientId, state]);
+
+  const removePatient = useCallback((id: string) => {
+    const registry = loadPatientRegistry();
+    if (!registry || registry.patients.length <= 1) return;
+    const updatedPatients = registry.patients.filter(p => p.id !== id);
+    const newActive = id === registry.activePatientId ? updatedPatients[0].id : registry.activePatientId;
+    savePatientRegistry({ patients: updatedPatients, activePatientId: newActive });
+    setPatients(updatedPatients);
+    if (id === activePatientId) {
+      switchPatient(newActive);
+    }
+  }, [activePatientId, switchPatient]);
+
   const cartCount = state.cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <AppContext.Provider
       value={{
         state,
+        patients,
+        activePatientId,
+        switchPatient,
+        addPatient,
+        updatePatient,
+        removePatient,
         upsertPrescription,
         setActivePrescription,
         markDose,

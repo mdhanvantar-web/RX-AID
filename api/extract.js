@@ -2,6 +2,28 @@ import { GoogleGenAI, Type } from '@google/genai';
 
 const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_BASE64_CHARS = 4_000_000; // keep the request under the serverless body limit
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = Number(process.env.RATE_LIMIT_MAX || 10);
+const rateBuckets = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const bucket = rateBuckets.get(ip) || { count: 0, reset: now + RATE_LIMIT_WINDOW_MS };
+  if (now > bucket.reset) {
+    bucket.count = 0;
+    bucket.reset = now + RATE_LIMIT_WINDOW_MS;
+  }
+  bucket.count += 1;
+  rateBuckets.set(ip, bucket);
+  return bucket.count > RATE_LIMIT_MAX;
+}
+
+function allowedOrigin(origin) {
+  if (!origin) return true;
+  const configured = (process.env.ALLOWED_ORIGINS || '').split(',').map(v => v.trim()).filter(Boolean);
+  if (configured.length === 0) return true;
+  return configured.includes(origin);
+}
 
 const EXTRACTION_PROMPT = `You are an expert prescription transcription assistant for RX-AID, a medication-organisation tool used by family caregivers in India.
 
@@ -127,6 +149,9 @@ function parseJson(text) {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Frame-Options', 'DENY');
 
   if (req.method === 'GET') {
     return res.status(200).json({
@@ -138,6 +163,19 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed.' });
+  }
+
+  const origin = req.headers.origin;
+  if (!allowedOrigin(origin)) {
+    return res.status(403).json({ success: false, error: 'Origin not allowed.' });
+  }
+
+  const ip =
+    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+    req.socket?.remoteAddress ||
+    'unknown';
+  if (isRateLimited(ip)) {
+    return res.status(429).json({ success: false, error: 'Too many requests. Please wait and try again.' });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;

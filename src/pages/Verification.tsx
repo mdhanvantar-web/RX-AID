@@ -40,9 +40,7 @@ export function Verification() {
 
   useEffect(() => {
     if (!draft) return;
-    const unresolved = draft.medications.some(
-      m => m.unclear && m.unclearFields.some(f => ['medicineName', 'dose', 'frequency'].includes(f))
-    );
+    const unresolved = draft.medications.some(m => m.unclear);
     setHasUnresolved(unresolved);
   }, [draft]);
 
@@ -93,7 +91,13 @@ export function Verification() {
     });
   }
 
+  function criticalFieldsFilled(med: MedicationEntry): boolean {
+    return Boolean(med.medicineName && med.medicineName !== '[Unreadable]' && med.strength && med.dose && med.frequency);
+  }
+
   function clearUnclear(medId: string) {
+    const med = draft?.medications.find(m => m.id === medId);
+    if (!med || !criticalFieldsFilled(med)) return;
     updateMedication(medId, { unclear: false, unclearFields: [] });
   }
 
@@ -131,8 +135,9 @@ export function Verification() {
     unclear: 'badge-unclear',
   };
 
+  const isSampleDraft = prescription.extracted?.source === 'demo';
   const needsComparisonAck = Boolean(comparison) && !comparisonAcknowledged;
-  const verifyBlocked = hasUnresolved || needsComparisonAck;
+  const verifyBlocked = hasUnresolved || needsComparisonAck || isSampleDraft;
 
   return (
     <main className="page-content verify-page">
@@ -322,6 +327,12 @@ export function Verification() {
                   All unclear fields must be manually corrected or removed before activating.
                 </p>
               )}
+              {isSampleDraft && (
+                <p className="verify-help">
+                  This draft was not read from your photo. Add a reader key on the scan screen
+                  and re-scan, or verify every field against the original before activating.
+                </p>
+              )}
               {needsComparisonAck && !hasUnresolved && (
                 <p className="verify-help">
                   Please acknowledge the prescription differences above before activating.
@@ -403,6 +414,7 @@ function MedicationCard({
               id={`clear-unclear-${med.id}`}
               className="btn btn-ghost btn-sm btn-icon"
               onClick={onClearUnclear}
+              disabled={!med.medicineName || med.medicineName === '[Unreadable]' || !med.strength || !med.dose || !med.frequency}
               aria-label="Mark as resolved"
               data-tooltip="Mark as resolved"
               type="button"

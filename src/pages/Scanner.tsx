@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useApp } from '../context/AppContext';
 import {
   extractPrescriptionWithGemini,
+  extractSamplePrescription,
   getLocalReaderStatus,
   getReaderStatus,
   setStoredGeminiApiKey,
@@ -309,7 +310,9 @@ export function Scanner() {
     };
     upsertPrescription(pendingRx);
 
-    const result = await extractPrescriptionWithGemini(imageDataUrl);
+    const result = readerStatus.live
+      ? await extractPrescriptionWithGemini(imageDataUrl)
+      : await extractSamplePrescription();
 
     if (result.success && result.data) {
       setIsDemoMode(result.demoMode);
