@@ -39,7 +39,7 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 | Prescription comparison screen and caregiver review notices | ✅ Implemented |
 | 7-day medication schedule and dose tracking | ✅ Implemented |
 | Pharmacy store selection and search | ✅ Demo implementation |
-| Multi-store price comparison | ✅ Demo implementation (15 catalog medicines) |
+| Multi-store price comparison | ✅ Demo implementation (30 catalog medicines) |
 | Cart, delivery/pickup choice, order review, order history | ✅ Demo implementation (no real payment or fulfilment) |
 | English + Telugu interface | ✅ Implemented |
 | 35-locale translation registry | ⚠️ Scaffolded in `src/i18n/`, not connected to the UI |
@@ -119,7 +119,7 @@ This repository contains the **RX-AID MVP**: a fully working frontend prototype 
 ### 8. Price comparison (`/compare`)
 - Compares the total payable amount for each verified medicine across the five demo stores.
 - Highlights the lowest total and supports adding any offer directly to the cart.
-- Exact catalog pricing covers 15 common medicines across Metformin, Amlodipine, Atorvastatin, Telmisartan, Pantoprazole, Levothyroxine, Paracetamol, Cetirizine, Losartan, Metoprolol, Amoxicillin, Azithromycin, Montelukast, Glimepiride, and Vitamin D3; other verified medicines use an illustrative fallback price.
+- Exact catalog pricing covers 30 common medicines across Metformin, Amlodipine, Atorvastatin, Telmisartan, Pantoprazole, Levothyroxine, Paracetamol, Cetirizine, Losartan, Metoprolol, Amoxicillin, Azithromycin, Montelukast, Glimepiride, and Vitamin D3; other verified medicines use an illustrative fallback price.
 
 ### 9. Profile and language preference (`/profile`)
 - Edit caregiver name, phone, and default delivery address.
