@@ -358,6 +358,8 @@ async function main() {
         assert.deepEqual(brokenImages, [], `broken images: ${brokenImages.join(', ')}`);
         assert.ok(height > 400, 'page appears blank');
         assert.equal(/demo/i.test(body), false, 'visible demo wording remains');
+        assert.equal(/sample/i.test(body), false, 'visible sample wording remains');
+        assert.equal(/sample/i.test(body), false, 'visible sample wording remains');
         assert.deepEqual(cdp.errors, [], `runtime/console errors: ${cdp.errors.join(' | ')}`);
       });
       await screenshot(`desktop-${route.name.toLowerCase().replace(/\s+/g, '-')}`);

@@ -169,7 +169,7 @@ export function Verification() {
           <div className="demo-banner animate-fade-in" role="alert">
             <AlertTriangle size={16} aria-hidden="true" />
             <span>
-              <strong>Sample result:</strong> this draft was not read from your photo. Add a
+              <strong>Example result:</strong> this draft was not read from your photo. Add a
               Gemini API key on the scan screen and re-scan, or correct every field manually
               before verifying.
             </span>

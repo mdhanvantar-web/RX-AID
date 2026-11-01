@@ -38,7 +38,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     // Scanner
     'scanner.title': 'Upload Doctor’s Prescription',
     'scanner.subtitle': 'Take a clear photo or choose a picture. Our friendly AI will read the medicines for you.',
-    'scanner.sample_btn': '✨ Try Sample Prescription',
+    'scanner.sample_btn': '✨ Try Example Prescription',
     'scanner.analyse_btn': 'Read Prescription with Gemini AI',
     'scanner.drop_text': 'Click here or drop your prescription photo',
 

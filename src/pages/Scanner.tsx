@@ -543,7 +543,7 @@ export function Scanner() {
                 <div className="demo-banner" role="note">
                   <Info size={16} aria-hidden="true" />
                   <span>
-                    <strong>Sample result:</strong> these medicines were not read from your
+                    <strong>Example result:</strong> these medicines were not read from your
                     photo. Verify every field against the original prescription before continuing.
                   </span>
                 </div>
@@ -587,7 +587,7 @@ export function Scanner() {
                       aria-label="Confirm prescription photo and read with AI"
                     >
                       <CheckCircle size={20} aria-hidden="true" />
-                      <span>{readerStatus.live ? 'Confirm & Read with Gemini AI' : 'Confirm & Use Sample List'}</span>
+                      <span>{readerStatus.live ? 'Confirm & Read with Gemini AI' : 'Confirm & Use Example List'}</span>
                     </button>
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export function Scanner() {
                     <p>
                       {readerStatus.live
                         ? `Photos will be read with Gemini${readerStatus.source === 'server' ? ' on the server' : ''}. Always compare every field with the original prescription.`
-                        : 'Add a Gemini API key to read your own prescriptions. Until then, scans show a sample medicine list so you can explore the workflow.'}
+                        : 'Add a Gemini API key to read your own prescriptions. Until then, scans show an example medicine list so you can explore the workflow.'}
                     </p>
                   </div>
                 </div>
@@ -772,9 +772,9 @@ export function Scanner() {
                   type="button"
                   className="btn btn-ghost sample-btn-friendly"
                   onClick={handleLoadSample}
-                  aria-label="Try a sample prescription"
+                  aria-label="Try an example prescription"
                 >
-                  ✨ Try a Sample Prescription
+                  ✨ Try an Example Prescription
                 </button>
               </div>
 

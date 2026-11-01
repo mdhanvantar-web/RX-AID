@@ -56,7 +56,7 @@ export const enTranslations: Record<string, string> = {
   'scanner.gallery_sub': 'Tap here to select an image from your computer or phone gallery',
   'scanner.gallery_btn': 'Browse Gallery',
   'scanner.native_camera_btn': 'Use Native Camera App',
-  'scanner.sample_btn': '✨ Try Sample Synthetic Prescription (Demo)',
+  'scanner.sample_btn': '✨ Try Example Prescription',
   'scanner.privacy_protected': 'Camera Privacy Protected: Camera is only accessed upon your direct tap. Camera tracks turn off immediately after photo capture.',
 
   // Verification
@@ -130,7 +130,7 @@ export const enTranslations: Record<string, string> = {
   'login.name_label': 'Your Full Name',
   'login.remember_me': 'Remember me on this tablet or phone',
   'login.forgot_password': 'Forgot password?',
-  'login.quick_demo': 'Quick Demo Access (Family Caregiver)',
+  'login.quick_demo': 'Continue as Family Caregiver',
 
   // Voice Reader
   'voice.read_instructions': 'Read Instructions Aloud',
